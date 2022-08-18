@@ -181,7 +181,7 @@ fun PackageParam.autoSignIn(versionCode: Int) {
  */
 fun PackageParam.oldAutoSignIn(versionCode: Int) {
     when (versionCode) {
-        in 758..784 -> {
+        in 758..788 -> {
             findClass("com.qidian.QDReader.ui.view.bookshelfview.CheckInReadingTimeView").hook {
                 injectMember {
                     method {
@@ -212,7 +212,7 @@ fun PackageParam.oldAutoSignIn(versionCode: Int) {
  */
 fun PackageParam.newAutoSignIn(versionCode: Int) {
     when (versionCode) {
-        in 758..784 -> {
+        in 758..788 -> {
             findClass("com.qidian.QDReader.ui.view.bookshelfview.CheckInReadingTimeViewNew").hook {
                 injectMember {
                     method {
@@ -367,6 +367,7 @@ fun PackageParam.removeBookshelfFloatWindow(versionCode: Int) {
 
 /**
  * Hook 移除底部导航栏中心广告
+ * 上级调用位置:com.qidian.QDReader.ui.activity.MainGroupActivity.checkAdTab()
  */
 fun PackageParam.removeBottomNavigationCenterAd(versionCode: Int) {
     when (versionCode) {
@@ -547,6 +548,7 @@ fun PackageParam.enableCustomSplash(versionCode: Int) {
 
 /**
  * Hook 启用隐藏底部小红点
+ * 上级调用位置:com.qidian.QDReader.ui.widget.maintab.PagerSlidingTabStrip.s()
  */
 fun PackageParam.hideBottomRedDot(versionCode: Int) {
     when (versionCode) {
@@ -599,10 +601,13 @@ fun PackageParam.removeQSNYDialog(versionCode: Int) {
             intercept()
         }
     }
+    /**
+     * 上级调用位置:com.qidian.QDReader.bll.manager.QDTeenagerManager.teenWorkDialog
+     */
     val dialogClassName: String? = when (versionCode) {
         in 758..768 -> "com.qidian.QDReader.bll.helper.v1"
         772 -> "com.qidian.QDReader.bll.helper.w1"
-        in 776..784 -> "com.qidian.QDReader.bll.helper.t1"
+        in 776..788 -> "com.qidian.QDReader.bll.helper.t1"
         else -> null
     }
     dialogClassName?.hook {
@@ -621,7 +626,7 @@ fun PackageParam.removeQSNYDialog(versionCode: Int) {
  */
 fun PackageParam.removeUpdate(versionCode: Int) {
     when (versionCode) {
-        in 758..784 -> {
+        in 758..788 -> {
 
             findClass("w4.h").hook {
                 injectMember {
