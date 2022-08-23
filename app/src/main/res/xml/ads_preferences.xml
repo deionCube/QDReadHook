@@ -22,4 +22,33 @@
 
     </PreferenceCategory>
 
+    <PreferenceCategory app:title="@string/ads_title_2">
+
+        <MultiSelectListPreference
+            app:entries="@array/option_list_data"
+            app:entryValues="@array/option_list_data_key"
+            app:key="optionListData"
+            app:summary="@string/et_add_option_summary"
+            app:title="@string/et_add_option" />
+
+        <EditTextPreference
+            app:key="AuthorListData"
+            app:title="@string/et_add_author"
+            app:useSimpleSummaryProvider="true" />
+
+        <EditTextPreference
+            app:key="BookNameListData"
+            app:title="@string/et_add_book_name"
+            app:useSimpleSummaryProvider="true" />
+        <EditTextPreference
+            app:key="BookTypeListData"
+            app:title="@string/et_add_book_type"
+            app:useSimpleSummaryProvider="true" />
+
+
+
+
+    </PreferenceCategory>
+
+
 </PreferenceScreen>

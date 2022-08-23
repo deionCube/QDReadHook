@@ -1,12 +1,41 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string-array name="custom_splash_image_type_entries">
-        <item>"类型0"</item>
-        <item>"类型1"</item>
+        <item>类型0</item>
+        <item>类型1</item>
     </string-array>
 
     <string-array name="custom_splash_image_type_values">
         <item>0</item>
         <item>1</item>
+    </string-array>
+
+    <!--搜索相关-->
+    <string-array name="option_list_data">
+        <item>搜索-发现(热词)</item>
+        <item>搜索-热门作品榜</item>
+        <item>搜索-人气标签榜</item>
+        <item>搜索-为你推荐</item>
+        <item>精选-主页面</item>
+        <item>精选-分类</item>
+        <item>精选-分类-全部作品</item>
+        <item>精选-免费-免费推荐</item>
+        <item>精选-免费-新书入库</item>
+        <item>精选-畅销精选、主编力荐等更多</item>
+        <item>精选-新书强推、三江推荐</item>
+    </string-array>
+
+    <string-array name="option_list_data_key">
+        <item>0</item>
+        <item>1</item>
+        <item>2</item>
+        <item>3</item>
+        <item>4</item>
+        <item>5</item>
+        <item>6</item>
+        <item>7</item>
+        <item>8</item>
+        <item>9</item>
+        <item>10</item>
     </string-array>
 </resources>

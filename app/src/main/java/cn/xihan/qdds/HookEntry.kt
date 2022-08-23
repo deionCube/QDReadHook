@@ -3,18 +3,26 @@ package cn.xihan.qdds
 import android.content.Context
 import android.content.SharedPreferences
 import android.os.Build
+import android.os.Environment
 import android.view.View
 import android.widget.*
+import cn.xihan.qdds.HookEntry.Companion.isEnableOption
+import cn.xihan.qdds.HookEntry.Companion.isNeedShield
+import com.alibaba.fastjson2.parseObject
+import com.alibaba.fastjson2.toJSONString
 import com.highcapable.yukihookapi.YukiHookAPI
 import com.highcapable.yukihookapi.annotation.xposed.InjectYukiHookWithXposed
 import com.highcapable.yukihookapi.hook.factory.current
+import com.highcapable.yukihookapi.hook.factory.method
 import com.highcapable.yukihookapi.hook.log.loggerE
 import com.highcapable.yukihookapi.hook.param.PackageParam
 import com.highcapable.yukihookapi.hook.type.android.ActivityClass
+import com.highcapable.yukihookapi.hook.type.android.ContextClass
 import com.highcapable.yukihookapi.hook.type.java.*
 import com.highcapable.yukihookapi.hook.xposed.proxy.IYukiHookXposedInit
 import de.robv.android.xposed.XSharedPreferences
 import de.robv.android.xposed.XposedHelpers.*
+import java.io.File
 
 
 /**
@@ -38,6 +46,8 @@ class HookEntry : IYukiHookXposedInit {
 
         loadApp(name = QD_PACKAGE_NAME) {
 
+            //loggerE(msg = "authorList: ${authorList}\nbookNameList: ${bookNameList}\nbookTypeList:${bookTypeList}")
+
             if (prefs.getBoolean("isEnableAutoSign")) {
                 autoSignIn(versionCode)
             }
@@ -50,15 +60,15 @@ class HookEntry : IYukiHookXposedInit {
                 enableLocalCard(versionCode)
             }
 
-            if (prefs.getBoolean("isEnableRemoveBookshelfFloat")) {
+            if (prefs.getBoolean("isEnableRemoveBookshelfFloat", BuildConfig.DEBUG)) {
                 removeBookshelfFloatWindow(versionCode)
             }
 
-            if (prefs.getBoolean("isEnableRemoveBookshelfBottomAd")) {
+            if (prefs.getBoolean("isEnableRemoveBookshelfBottomAd", BuildConfig.DEBUG)) {
                 removeBottomNavigationCenterAd(versionCode)
             }
 
-            if (prefs.getBoolean("isEnableDisableAd")) {
+            if (prefs.getBoolean("isEnableDisableAd", BuildConfig.DEBUG)) {
                 disableAd(versionCode)
             }
 
@@ -72,9 +82,76 @@ class HookEntry : IYukiHookXposedInit {
                 removeQSNYDialog(versionCode)
             }
 
-            if (prefs.getBoolean("isEnableRemoveUpdate")) {
+            if (prefs.getBoolean("isEnableRemoveUpdate", BuildConfig.DEBUG)) {
                 removeUpdate(versionCode)
             }
+
+            if (prefs.getBoolean("isEnableRemoveDailyRead")) {
+                shieldDailyReading(versionCode)
+            }
+
+            if (prefs.getBoolean("isEnableRemoveChoice")) {
+                shieldChoice(versionCode)
+            }
+
+            if (optionList.isNotEmpty()) {
+                shieldOption(versionCode, optionList)
+            }
+
+            /**
+             * 开启OkHttp3 日志拦截器
+             */
+            /*
+            findClass("com.qidian.QDReader.framework.network.common.QDHttpLogInterceptor").hook {
+                injectMember {
+                    method {
+                        name = "c"
+                        param(BooleanType)
+                    }
+                    beforeHook{
+                        args(0).setTrue()
+                    }
+                }
+            }
+
+             */
+
+            /**
+             * 调试-查看跳转关键词
+             */
+            /*
+            findClass("com.qidian.QDReader.other.ActionUrlProcess").hook {
+                /*
+                injectMember {
+                    method {
+                        name = "processOpenBookListReborn"
+                        param(ContextClass, JSONObjectClass)
+                    }
+                    afterHook {
+                        printCallStack(instanceClass.name)
+                        val s = args[1] as? JSONObject
+                        loggerE(msg = "s: $s")
+                    }
+                }
+
+                 */
+
+                injectMember {
+                    method {
+                        name = "processSinceV650"
+                        param(ContextClass, StringType, JSONObjectClass)
+                    }
+                    afterHook {
+                        //printCallStack(instance.javaClass.name)
+                        val s = args[1] as? String
+                        val jb = args[2] as? JSONObject
+                        loggerE(msg = "s: $s\njb: $jb")
+                    }
+                }
+            }
+
+             */
+
         }
 
 
@@ -91,6 +168,84 @@ class HookEntry : IYukiHookXposedInit {
         }
 
         val versionCode by lazy { getApplicationVersionCode(QD_PACKAGE_NAME) }
+
+        /**
+         * 需要屏蔽的作者列表
+         */
+        val authorList by lazy {
+            val s = getPref()?.getString("AuthorListData", "")
+            if (s.isNullOrBlank()) {
+                return@lazy emptyList<String>()
+            }
+            if (s.contains(";")) {
+                return@lazy s.split(";")
+            } else {
+                listOf(s)
+            }
+        }
+
+        /**
+         * 需要屏蔽的书名关键词列表
+         */
+        val bookNameList by lazy {
+            val s = getPref()?.getString("BookNameListData", "")
+            if (s.isNullOrBlank()) {
+                return@lazy emptyList<String>()
+            }
+            if (s.contains(";")) {
+                return@lazy s.split(";")
+            } else {
+                listOf(s)
+            }
+        }
+
+        /**
+         * 需要屏蔽的书籍类型列表
+         */
+        val bookTypeList by lazy {
+            val s = getPref()?.getString("BookTypeListData", "")
+            if (s.isNullOrBlank()) {
+                return@lazy emptyList<String>()
+            }
+            if (s.contains(";")) {
+                return@lazy s.split(";")
+            } else {
+                listOf(s)
+            }
+        }
+
+        /**
+         * 搜索相关的选项
+         */
+        val optionList by lazy {
+            getPref()?.getStringSet("optionListData", setOf()) ?: setOf()
+        }
+
+        /**
+         * 判断是否启用了该选项
+         * @param optionValue 选项的值
+         */
+        fun isEnableOption(optionValue: String) = optionList.any { it == optionValue }
+
+        /**
+         * 判断是否需要屏蔽
+         * @param bookName 书名-可空
+         * @param authorName 作者名-可空
+         * @param bookType 书类型-可空
+         */
+        fun isNeedShield(bookName: String?, authorName: String?, bookType: Set<String>?): Boolean {
+            //loggerE(msg = "bookName: $bookName\nauthorName:$authorName\nbookType:$bookType")
+            if (!bookName.isNullOrBlank() && bookNameList.any { it in bookName }) {
+                return true
+            }
+            if (!authorName.isNullOrBlank() && authorList.any { authorName == it }) {
+                return true
+            }
+            if (!bookType.isNullOrEmpty() && bookType.any { it in bookTypeList }) {
+                return true
+            }
+            return false
+        }
 
         fun getPref(): SharedPreferences? {
             val pref = XSharedPreferences(BuildConfig.APPLICATION_ID)
@@ -166,6 +321,37 @@ fun printCallStack(className: String = "") {
         loggerE(msg = "Dump Stack: $index: $stackTraceElement")
     }
     loggerE(msg = "Dump Stack: ---------------end----------------")
+}
+
+
+/**
+ * 容错安全运行方法
+ */
+fun safeRun(block: () -> Unit) {
+    try {
+        block()
+    } catch (e: Exception) {
+        loggerE(msg = "safeRun 报错: ${e.message}")
+    }
+}
+
+/**
+ * 写入测试文本
+ */
+fun String.write(fileName: String = "test") {
+    // 如果文件名已存在 则文件名 + 1
+    var index = 0
+    while (File(
+            "${Environment.getExternalStorageDirectory().path}/MT2/apks/起点",
+            "$fileName-$index.txt"
+        ).exists()
+    ) {
+        index++
+    }
+    File(
+        "${Environment.getExternalStorageDirectory().path}/MT2/apks/起点",
+        "$fileName-$index.txt"
+    ).writeText(this)
 }
 
 fun PackageParam.autoSignIn(versionCode: Int) {
@@ -428,6 +614,19 @@ fun PackageParam.disableAd(versionCode: Int) {
                     intercept()
                 }
             }
+
+            findClass("com.qidian.QDReader.component.api.a").hook {
+                injectMember {
+                    method {
+                        name = "b"
+                        returnType = UnitType
+                    }
+                    intercept()
+                }
+            }
+
+            // TODO 首页横幅广告:/argus/api/v2/adv/getadvlistbatch
+
         }
         else -> loggerE(msg = "禁用广告不支持的版本号为: $versionCode")
     }
@@ -719,6 +918,689 @@ fun PackageParam.removeUpdate(versionCode: Int) {
 
         }
         else -> loggerE(msg = "禁用检查更新不支持的版本号为: $versionCode")
+    }
+}
+
+/**
+ * 屏蔽选项
+ * @param versionCode 版本号
+ * @param optionValueSet 屏蔽选项值
+ */
+fun PackageParam.shieldOption(versionCode: Int, optionValueSet: Set<String>) {
+    // 遍历 optionValueSet 包含的值 执行指定方法
+    optionValueSet.forEach {
+        when (it) {
+            "0" -> shieldSearchFind(versionCode)
+            "3" -> shieldSearchRecommend(versionCode)
+            "4" -> shieldChoice(versionCode)
+            "5" -> shieldCategory(versionCode)
+            "6" -> shieldCategoryAllBook(versionCode)
+            "7" -> shieldFreeRecommend(versionCode)
+            "8" -> shieldFreeNewBook(versionCode)
+            "9" -> shieldHotAndRecommend(versionCode)
+            "10" -> shieldNewBookAndRecommend(versionCode)
+        }
+    }
+    shieldSearch(versionCode, isEnableOption("1"), isEnableOption("2"))
+}
+
+/**
+ * 屏蔽每日导读指定的书籍
+ */
+fun PackageParam.shieldDailyReading(versionCode: Int) {
+    when (versionCode) {
+        788 -> {
+            findClass("com.qidian.QDReader.component.api.b1").hook {
+                injectMember {
+                    method {
+                        name = "j"
+                        emptyParam()
+                        returnType = ArrayListClass
+                    }
+
+                    afterHook {
+                        val list = result as? ArrayList<*>
+                        list?.let {
+                            safeRun {
+                                val iterator = it.iterator()
+                                while (iterator.hasNext()) {
+                                    val item = iterator.next().toJSONString()
+                                    val jb = item.parseObject()
+                                    val bookName = jb.getString("BookName")
+                                    val authorName = jb.getString("AuthorName")
+                                    val categoryName = jb.getString("CategoryName")
+                                    val subCategoryName = jb.getString("SubCategoryName")
+                                    val array = jb.getJSONArray("AuthorTags")
+                                    val bookTypeArray = mutableSetOf(categoryName, subCategoryName)
+                                    if (!array.isNullOrEmpty()) {
+                                        for (i in array.indices) {
+                                            array += array.getString(i)
+                                        }
+                                    }
+                                    val isNeedShield =
+                                        isNeedShield(
+                                            bookName = bookName,
+                                            authorName = authorName,
+                                            bookType = bookTypeArray
+                                        )
+                                    if (isNeedShield) {
+                                        iterator.remove()
+                                    }
+                                }
+                            }
+                            result = list
+                        }
+
+                    }
+                }
+            }
+        }
+        else -> loggerE(msg = "屏蔽每日导读不支持的版本号为: $versionCode")
+    }
+}
+
+/**
+ * 屏蔽精选主页面
+ */
+fun PackageParam.shieldChoice(versionCode: Int) {
+    when (versionCode) {
+        788 -> {
+            /**
+             * 精选主页面
+             */
+            findClass("com.qidian.QDReader.repository.entity.BookListData").hook {
+                injectMember {
+                    method {
+                        name = "getItems"
+                        returnType = ListClass
+                    }
+                    afterHook {
+                        val list = getParam<MutableList<*>>(instance, "items")
+                        list?.let {
+                            val iterator = it.iterator()
+                            while (iterator.hasNext()) {
+                                val item = iterator.next().toJSONString()
+                                val jb = item.parseObject()
+                                val authorName = jb.getString("authorName")
+                                val bookName = jb.getString("bookName")
+                                val categoryName = jb.getString("categoryName")
+                                val subCategoryName = jb.getString("subCategoryName")
+                                val array = jb.getJSONArray("tags")
+                                val bookTypeArray = mutableSetOf(categoryName, subCategoryName)
+                                if (!array.isNullOrEmpty()) {
+                                    for (i in array.indices) {
+                                        array += array.getString(i)
+                                    }
+                                }
+                                val isNeedShield =
+                                    isNeedShield(
+                                        bookName = bookName,
+                                        authorName = authorName,
+                                        bookType = bookTypeArray
+                                    )
+                                if (isNeedShield) {
+                                    iterator.remove()
+                                }
+                            }
+                            result = it
+                        }
+                    }
+                }
+            }
+        }
+        else -> loggerE(msg = "屏蔽精选主页面不支持的版本号为: $versionCode")
+    }
+
+}
+
+/**
+ * 屏蔽分类
+ */
+fun PackageParam.shieldCategory(versionCode: Int) {
+    when (versionCode) {
+        788 -> {
+            /**
+             * 分类
+             */
+            findClass("com.qidian.QDReader.ui.adapter.x6\$a").hook {
+                injectMember {
+                    constructor {
+                        param(
+                            "com.qidian.QDReader.ui.adapter.x6".clazz,
+                            ContextClass,
+                            IntType,
+                            ListClass
+                        )
+                    }
+                    beforeHook {
+                        val list = args[3] as? MutableList<*>
+                        list?.let {
+                            safeRun {
+                                val iterator = it.iterator()
+                                while (iterator.hasNext()) {
+                                    val item = iterator.next().toJSONString()
+                                    val jb = item.parseObject()
+                                    val categoryName = jb.getString("categoryName")
+                                    val subCategoryName = jb.getString("subCategoryName")
+                                    val bookTypeArray = mutableSetOf<String>()
+                                    if (!categoryName.isNullOrBlank()) {
+                                        bookTypeArray += categoryName
+                                    }
+                                    if (!subCategoryName.isNullOrBlank()) {
+                                        bookTypeArray += subCategoryName
+                                    }
+                                    val isNeedShield =
+                                        isNeedShield(
+                                            bookName = null,
+                                            authorName = null,
+                                            bookType = bookTypeArray
+                                        )
+                                    if (isNeedShield) {
+                                        iterator.remove()
+                                    }
+                                }
+                            }
+                            args(3).set(it)
+                        }
+                    }
+                }
+            }
+        }
+        else -> loggerE(msg = "屏蔽分类不支持的版本号为: $versionCode")
+    }
+}
+
+/**
+ * 屏蔽免费-免费推荐
+ */
+fun PackageParam.shieldFreeRecommend(versionCode: Int) {
+    when (versionCode) {
+        788 -> {
+            /**
+             * 免费-免费推荐
+             */
+            findClass("la.a").hook {
+                injectMember {
+                    method {
+                        name = "n"
+                        param(
+                            "com.qidian.QDReader.repository.entity.BookStoreDynamicItem".clazz,
+                            IntType,
+                            IntType
+                        )
+                    }
+                    beforeHook {
+                        val item = args[0]?.let { getParam<ArrayList<*>>(it, "BookList") }
+                        item?.let {
+                            safeRun {
+                                val iterator = it.iterator()
+                                while (iterator.hasNext()) {
+                                    val item = iterator.next().toJSONString()
+                                    val jb = item.parseObject()
+                                    val authorName = jb.getString("AuthorName")
+                                    val bookName = jb.getString("BookName")
+                                    val categoryName = jb.getString("CategoryName")
+                                    val subCategoryName = jb.getString("SubCategoryName")
+                                    val array = jb.getJSONArray("tagList")
+                                    val bookTypeArray = mutableSetOf<String>()
+                                    categoryName?.let { bookTypeArray += categoryName }
+                                    subCategoryName?.let { bookTypeArray += subCategoryName }
+                                    array?.let { it1 ->
+                                        it1.forEach { it2 ->
+                                            bookTypeArray += it2.toString()
+                                        }
+                                    }
+                                    val isNeedShield =
+                                        isNeedShield(
+                                            bookName = bookName,
+                                            authorName = authorName,
+                                            bookType = bookTypeArray
+                                        )
+                                    if (isNeedShield) {
+                                        iterator.remove()
+                                    }
+                                }
+                            }
+                        }
+
+                    }
+
+                }
+            }
+        }
+        else -> loggerE(msg = "屏蔽免费-免费推荐不支持的版本号: $versionCode")
+    }
+}
+
+/**
+ * 屏蔽免费-新书入库
+ */
+fun PackageParam.shieldFreeNewBook(versionCode: Int) {
+    when (versionCode) {
+        788 -> {
+            /**
+             * 免费-新书入库
+             */
+            findClass("com.qidian.QDReader.ui.fragment.QDNewBookInStoreFragment").hook {
+                injectMember {
+                    method {
+                        name = "loadData\$lambda-6"
+                        param(
+                            "com.qidian.QDReader.ui.fragment.QDNewBookInStoreFragment".clazz,
+                            "com.qidian.QDReader.repository.entity.NewBookInStore".clazz
+                        )
+                    }
+                    beforeHook {
+                        args[1]?.let {
+                            val categoryIdList = getParam<MutableList<*>>(it, "CategoryIdList")
+                            val itemList = getParam<MutableList<*>>(it, "ItemList")
+                            categoryIdList?.let { list ->
+                                safeRun {
+                                    val iterator = list.iterator()
+                                    while (iterator.hasNext()) {
+                                        val item = iterator.next().toJSONString()
+                                        val jb = item.parseObject()
+                                        val categoryName = jb.getString("CategoryName")
+                                        val isNeedShield =
+                                            isNeedShield(
+                                                bookName = null,
+                                                authorName = null,
+                                                bookType = setOf(categoryName)
+                                            )
+                                        if (isNeedShield) {
+                                            iterator.remove()
+                                        }
+                                    }
+                                }
+                            }
+                            itemList?.let { list ->
+                                safeRun {
+                                    val iterator = list.iterator()
+                                    while (iterator.hasNext()) {
+                                        val item = iterator.next().toJSONString()
+                                        val jb = item.parseObject()
+                                        val authorName = jb.getString("AuthorName")
+                                        val bookName = jb.getString("BookName")
+                                        val categoryName = jb.getString("CategoryName")
+                                        val subCategoryName = jb.getString("SubCategoryName")
+                                        val array = jb.getJSONArray("tagList")
+                                        val bookTypeArray = mutableSetOf<String>()
+                                        categoryName?.let { bookTypeArray += categoryName }
+                                        subCategoryName?.let { bookTypeArray += subCategoryName }
+                                        array?.let { jsonArray ->
+                                            for (i in jsonArray.indices) {
+                                                bookTypeArray += jsonArray[i].toString()
+                                            }
+                                        }
+                                        val isNeedShield =
+                                            isNeedShield(
+                                                bookName = bookName,
+                                                authorName = authorName,
+                                                bookType = bookTypeArray
+                                            )
+                                        if (isNeedShield) {
+                                            iterator.remove()
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        else -> loggerE(msg = "屏蔽免费-新书入库不支持的版本号: $versionCode")
+    }
+}
+
+/**
+ * 屏蔽畅销精选、主编力荐等更多
+ */
+fun PackageParam.shieldHotAndRecommend(versionCode: Int) {
+    when (versionCode) {
+        788 -> {
+            /**
+             * 畅销精选、主编力荐等更多
+             */
+            findClass("com.qidian.QDReader.ui.adapter.s").hook {
+                injectMember {
+                    method {
+                        name = "n"
+                        returnType = UnitType
+                    }
+                    beforeHook {
+                        val list = getParam<MutableList<*>>(instance, "b")
+                        list?.let {
+                            safeRun {
+                                val iterator = it.iterator()
+                                while (iterator.hasNext()) {
+                                    val item = iterator.next().toJSONString()
+                                    val jb = item.parseObject()
+                                    val authorName = jb.getString("AuthorName")
+                                    val bookName = jb.getString("BookName")
+                                    val categoryName = jb.getString("CategoryName")
+                                    val subCategoryName = jb.getString("SubCategoryName")
+                                    val array = jb.getJSONArray("Tags")
+                                    val bookTypeArray = mutableSetOf(categoryName, subCategoryName)
+                                    if (!array.isNullOrEmpty()) {
+                                        for (i in array.indices) {
+                                            array += array.getString(i)
+                                        }
+                                    }
+                                    val isNeedShield =
+                                        isNeedShield(
+                                            bookName = bookName,
+                                            authorName = authorName,
+                                            bookType = bookTypeArray
+                                        )
+                                    if (isNeedShield) {
+                                        iterator.remove()
+                                    }
+                                }
+                            }
+                            safeRun {
+                                instance.javaClass.method {
+                                    name = "setList"
+                                    param(ListClass)
+                                }.get(instance).call(it)
+                            }
+                        }
+
+                    }
+                }
+            }
+        }
+        else -> loggerE(msg = "屏蔽畅销精选、主编力荐等更多不支持的版本号: $versionCode")
+    }
+}
+
+/**
+ * 屏蔽新书强推、三江推荐
+ */
+fun PackageParam.shieldNewBookAndRecommend(versionCode: Int) {
+    when (versionCode) {
+        788 -> {
+            /**
+             * 新书强推、三江推荐
+             */
+            findClass("com.qidian.QDReader.ui.fragment.SanJiangPagerFragment").hook {
+                injectMember {
+                    method {
+                        name = "r"
+                        param("com.qidian.QDReader.ui.fragment.SanJiangPagerFragment".clazz)
+                        returnType = ListClass
+                    }
+                    afterHook {
+                        val list = result as? MutableList<*>
+                        list?.let {
+                            safeRun {
+                                val iterator = it.iterator()
+                                while (iterator.hasNext()) {
+                                    val item = iterator.next().toJSONString()
+                                    val json = item.parseObject()
+                                    val jb = json.getJSONObject("BookStoreItem")
+                                    if (jb != null) {
+                                        val authorName = jb.getString("AuthorName")
+                                        val bookName = jb.getString("BookName")
+                                        val categoryName = jb.getString("CategoryName")
+                                        val array = jb.getJSONArray("tagList")
+                                        val bookTypeArray = mutableSetOf(categoryName)
+                                        if (!array.isNullOrEmpty()) {
+                                            for (i in array.indices) {
+                                                array += array.getString(i)
+                                            }
+                                        }
+                                        val isNeedShield =
+                                            isNeedShield(
+                                                bookName = bookName,
+                                                authorName = authorName,
+                                                bookType = bookTypeArray
+                                            )
+                                        if (isNeedShield) {
+                                            iterator.remove()
+                                        }
+                                    }
+                                }
+                            }
+                            result = it
+                        }
+                    }
+                }
+            }
+        }
+        else -> loggerE(msg = "屏蔽新书强推、三江推荐不支持的版本号: $versionCode")
+    }
+}
+
+/**
+ * 屏蔽分类-全部作品
+ */
+fun PackageParam.shieldCategoryAllBook(versionCode: Int) {
+    when (versionCode) {
+        788 -> {
+            /**
+             * 分类-全部作品
+             */
+            findClass("com.qidian.QDReader.ui.activity.BookLibraryActivity").hook {
+                injectMember {
+                    method {
+                        name = "M"
+                        param("com.qidian.QDReader.ui.activity.BookLibraryActivity".clazz)
+                        returnType = ArrayListClass
+                    }
+                    beforeHook {
+                        args[0]?.let {
+                            val list = getParam<ArrayList<*>>(it, "mBookList")
+                            list?.let {
+                                safeRun {
+                                    val iterator = it.iterator()
+                                    while (iterator.hasNext()) {
+                                        val item = iterator.next().toJSONString()
+                                        val jb = item.parseObject()
+                                        val authorName = jb.getString("authorName")
+                                        val bookName = jb.getString("bookName")
+                                        val categoryName = jb.getString("categoryName")
+                                        val isNeedShield =
+                                            isNeedShield(
+                                                bookName = bookName,
+                                                authorName = authorName,
+                                                bookType = setOf(categoryName)
+                                            )
+                                        if (isNeedShield) {
+                                            iterator.remove()
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        else -> loggerE(msg = "屏蔽分类-全部作品不支持的版本号: $versionCode")
+    }
+}
+
+/**
+ * 屏蔽搜索发现(热词)
+ */
+fun PackageParam.shieldSearchFind(versionCode: Int) {
+    when (versionCode) {
+        788 -> {
+            /**
+             * 搜索发现(热词)
+             */
+            findClass("com.qidian.QDReader.repository.entity.search.SearchHotWordBean").hook {
+                injectMember {
+                    method {
+                        name = "getWordList"
+                        emptyParam()
+                        returnType = ListClass
+                    }
+                    afterHook {
+                        val list = result as? MutableList<*>
+                        list?.clear()
+                        result = list
+                    }
+                }
+            }
+        }
+        else -> loggerE(msg = "屏蔽搜索发现(热词)不支持的版本号: $versionCode")
+    }
+}
+
+/**
+ * 屏蔽搜索-热门作品榜、人气标签榜
+ * @param versionCode 版本号
+ * @param isNeedShieldBookRank 屏蔽热门作品榜
+ * @param isNeedShieldTagRank 屏蔽人气标签榜
+ */
+fun PackageParam.shieldSearch(
+    versionCode: Int,
+    isNeedShieldBookRank: Boolean,
+    isNeedShieldTagRank: Boolean
+) {
+    when (versionCode) {
+        788 -> {
+            if (isNeedShieldBookRank){
+                /**
+                 * 屏蔽热搜作品榜更多
+                 */
+                findClass("o9.d").hook {
+                    injectMember {
+                        method {
+                            name = "o"
+                        }
+                        beforeHook {
+                            val list = args[0] as? MutableList<*>
+                            list?.let {
+                                safeRun {
+                                    val iterator = it.iterator()
+                                    while (iterator.hasNext()) {
+                                        val item = iterator.next().toJSONString()
+                                        val jb = item.parseObject()
+                                        val authorName = jb.getString("AuthorName")
+                                        val bookName = jb.getString("BookName")
+                                        val categoryName = jb.getString("BookCategory")
+                                        val isNeedShield =
+                                            isNeedShield(
+                                                bookName = bookName,
+                                                authorName = authorName,
+                                                bookType = setOf(categoryName)
+                                            )
+                                        if (isNeedShield) {
+                                            iterator.remove()
+                                        }
+
+                                    }
+                                }
+                                args(0).set(it)
+                            }
+                        }
+                    }
+                }
+            }
+            findClass("com.qidian.QDReader.ui.view.search.SearchHomePageRankView").hook {
+                if (isNeedShieldBookRank) {
+                    /**
+                     * 热门作品榜
+                     */
+                    injectMember {
+                        method {
+                            name = "setBookRank"
+                            param("com.qidian.QDReader.repository.entity.search.SearchBookRankBean".clazz)
+                        }
+                        beforeHook {
+                            args[0]?.let {
+                                val bookList = getParam<MutableList<*>>(it, "BookList")
+                                bookList?.let {
+                                    safeRun {
+                                        val iterator = it.iterator()
+                                        while (iterator.hasNext()) {
+                                            val item = iterator.next().toJSONString()
+                                            val jb = item.parseObject()
+                                            val bookName = jb.getString("bookName")
+                                            val isNeedShield =
+                                                isNeedShield(
+                                                    bookName = bookName,
+                                                    authorName = null,
+                                                    bookType = null
+                                                )
+                                            if (isNeedShield) {
+                                                iterator.remove()
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                if (isNeedShieldTagRank) {
+                    /**
+                     * 人气标签榜
+                     */
+                    injectMember {
+                        method {
+                            name = "setTagRank"
+                            param("com.qidian.QDReader.repository.entity.search.SearchTagRankBean".clazz)
+                        }
+                        beforeHook {
+                            args[0]?.let {
+                                val list = getParam<MutableList<*>>(it, "TagList")
+                                list?.let {
+                                    safeRun {
+                                        val iterator = it.iterator()
+                                        while (iterator.hasNext()) {
+                                            val item = iterator.next().toJSONString()
+                                            val jb = item.parseObject()
+                                            val tagName = jb.getString("tagName")
+                                            val isNeedShield =
+                                                isNeedShield(
+                                                    bookName = null,
+                                                    authorName = null,
+                                                    bookType = setOf(tagName)
+                                                )
+                                            if (isNeedShield) {
+                                                iterator.remove()
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        else -> loggerE(msg = "屏蔽搜索-热门作品榜、人气标签榜不支持的版本号: $versionCode")
+    }
+}
+
+/**
+ * 屏蔽搜索-为你推荐
+ */
+fun PackageParam.shieldSearchRecommend(versionCode: Int) {
+    when (versionCode) {
+        788 -> {
+            /**
+             * 搜索-为你推荐
+             */
+            findClass("com.qidian.QDReader.repository.entity.search.SearchHomeCombineBean").hook {
+                injectMember {
+                    constructor {
+                        param(ListClass)
+                    }
+                    beforeHook {
+                        val list = args[0] as? MutableList<*>
+                        list?.clear()
+                        args(0).set(list)
+                    }
+                }
+            }
+        }
+        else -> loggerE(msg = "屏蔽搜索-为你推荐不支持的版本号: $versionCode")
     }
 }
 

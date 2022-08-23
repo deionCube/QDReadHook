@@ -52,6 +52,16 @@
     <!--自定义跳转到指定书详情页说明-->
     <string name="custom_book_detail_hint">填入书籍的BookId,详情页分享链接里面"bookid="后面到"&amp;"前那串数字就是了</string>
     <string name="sw_remove_update">禁用检查更新</string>
+    <string name="ads_title_2">屏蔽相关</string>
+    <string name="sw_remove_author">启用屏蔽作者</string>
+    <string name="sw_remove_book_name">屏蔽书名关键词</string>
+    <string name="lp_remove_author_list">需要屏蔽的作者列表</string>
+    <string name="et_add_author">填入需要屏蔽的完整作者名称\n使用";"分隔</string>
+    <string name="et_add_book_name">填入需要的屏蔽书名关键词\n注意:单字威力巨大!\n使用";"分隔</string>
+    <string name="sw_remove_book_type">启用屏蔽书类型</string>
+    <string name="et_add_book_type">填入需要的屏蔽书类型\n使用";"分隔</string>
+    <string name="et_add_option">屏蔽选项列表</string>
+    <string name="et_add_option_summary">勾选上需要屏蔽的位置</string>
 
 
 </resources>

@@ -10,7 +10,7 @@
 
 使用 [YukiHookAPI](https://github.com/fankes/YukiHookAPI)
 
-* 目前支持 758~768、772、776、780、784 版本
+* 目前支持 758~768、772、776、780、784、788 版本
 
 * 暂时提高版本号范围以支持一些不容易改变的类
 
@@ -46,9 +46,52 @@
 
         ps:简单粗暴拦截相关方法
 
-* 禁用TX系广告
+* 禁用广告
 
+  * 每日导读广告(1.1.0+)
+
+  * 启动页广告
+
+  * GDT广告
+  
         ps:简单粗暴拦截广告sdk动态加载以及网络连接
+
+### 屏蔽相关(1.1.0+ 目前仅支持788版本)
+
+---
+
+* 屏蔽选项列表(自选)
+
+  * 搜索-发现(热词)
+
+  * 搜索-热门作品榜
+  * 搜索-人气标签榜
+  * 搜索-为你推荐
+  * 精选-主页面
+  * 精选-分类
+  * 精选-分类-全部作品
+  * 精选-免费-新书入库
+  * 精选-畅销精选、主编力荐等更多
+  * 精选-新书强推、三江推荐
+
+* 需要屏蔽的作者列表
+
+        ps:填入完整作者名称
+
+* 需要屏蔽的书名关键词
+
+        ps:单字威力巨大!!!甚至可能导致看上去布局显示错乱。多个关键词使用方法举例:"心声;四合院;不想",用英文的";"
+
+* 需要屏蔽书的类型
+
+        ps:填入完整的如"仙侠"，但是"古典仙侠"不会被屏蔽，需要再加入"古典仙侠"。后期可能会加入加强版,多个关键词使用方法如上
+
+#### 效果图
+
+![精选-主页面](https://github.com/xihan123/QDReadHook/blob/master/Screenshots/精选-主页面.jpg?raw=true)
+![全部作品-分类](https://github.com/xihan123/QDReadHook/blob/master/Screenshots/全部作品-分类.jpg?raw=true)
+
+---
 
 ### 闪屏页相关
 
@@ -83,7 +126,7 @@
 ![image](https://github.com/xihan123/QDReadHook/blob/master/Screenshots/1.jpg?raw=true)
 ![image](https://github.com/xihan123/QDReadHook/blob/master/Screenshots/2.jpg?raw=true)
 ![image](https://github.com/xihan123/QDReadHook/blob/master/Screenshots/3.jpg?raw=true)
-
+![image](https://github.com/xihan123/QDReadHook/blob/master/Screenshots/4.jpg?raw=true)
 ---
 
 ## 常见问题
@@ -113,3 +156,11 @@
         5.修改上述所提到的文件夹权限
         6.清除起点数据
         7.打开起点
+
+---
+
+## 如果觉得这个模块对您有用，可扫描下方二维码随意打赏,要是能打赏个 10.24 🐵就太👍了。您的支持就是我更新的动力
+
+![zfb](https://github.com/xihan123/QDReadHook/blob/master/Screenshots/zfb.jpg?raw=true)
+![wx](https://github.com/xihan123/QDReadHook/blob/master/Screenshots/wx.png?raw=true)
+![qq](https://github.com/xihan123/QDReadHook/blob/master/Screenshots/qq.png?raw=true)
