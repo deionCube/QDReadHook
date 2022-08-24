@@ -23,6 +23,7 @@
         <item>精选-免费-新书入库</item>
         <item>精选-畅销精选、主编力荐等更多</item>
         <item>精选-新书强推、三江推荐</item>
+        <item>每日导读</item>
     </string-array>
 
     <string-array name="option_list_data_key">
@@ -37,5 +38,6 @@
         <item>8</item>
         <item>9</item>
         <item>10</item>
+        <item>11</item>
     </string-array>
 </resources>

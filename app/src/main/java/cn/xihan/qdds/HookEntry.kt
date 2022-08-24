@@ -6,6 +6,7 @@ import android.os.Build
 import android.os.Environment
 import android.view.View
 import android.widget.*
+import androidx.annotation.Keep
 import cn.xihan.qdds.HookEntry.Companion.isEnableOption
 import cn.xihan.qdds.HookEntry.Companion.isNeedShield
 import com.alibaba.fastjson2.parseObject
@@ -22,6 +23,10 @@ import com.highcapable.yukihookapi.hook.type.java.*
 import com.highcapable.yukihookapi.hook.xposed.proxy.IYukiHookXposedInit
 import de.robv.android.xposed.XSharedPreferences
 import de.robv.android.xposed.XposedHelpers.*
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.json.Json
 import java.io.File
 
 
@@ -47,6 +52,47 @@ class HookEntry : IYukiHookXposedInit {
         loadApp(name = QD_PACKAGE_NAME) {
 
             //loggerE(msg = "authorList: ${authorList}\nbookNameList: ${bookNameList}\nbookTypeList:${bookTypeList}")
+
+            safeRun {
+                optionEntity?.let {
+                    if (it.mainOption.enableAutoSign) {
+                        autoSignIn(versionCode)
+                    }
+                    if (it.mainOption.enableOldLayout) {
+                        enableOldLayout(versionCode)
+                    }
+                    if (it.mainOption.enableLocalCard) {
+                        enableLocalCard(versionCode)
+                    }
+                    if (it.mainOption.enableHideBottomDot) {
+                        hideBottomRedDot(versionCode)
+                    }
+                    if (it.mainOption.enableDisableQSNModeDialog) {
+                        removeQSNYDialog(versionCode)
+                    }
+
+                    if (it.advOption.enableRemoveBookshelfFloat) {
+                        removeBookshelfFloatWindow(versionCode)
+                    }
+                    if (it.advOption.enableRemoveBookshelfBottomAd) {
+                        removeBottomNavigationCenterAd(versionCode)
+                    }
+                    if (it.advOption.enableDisableCheckUpdate) {
+                        removeUpdate(versionCode)
+                    }
+                    if (it.advOption.enableDisableAdv) {
+                        disableAd(versionCode)
+                    }
+
+                    if (it.splashOption.enableSplash) {
+                        if (it.splashOption.enableCustomSplash) {
+                            // TODO: 自定义闪屏页暂不支持
+                        }
+                    } else {
+                        disableSplash(versionCode)
+                    }
+                }
+            }
 
             if (prefs.getBoolean("isEnableAutoSign")) {
                 autoSignIn(versionCode)
@@ -84,14 +130,6 @@ class HookEntry : IYukiHookXposedInit {
 
             if (prefs.getBoolean("isEnableRemoveUpdate", BuildConfig.DEBUG)) {
                 removeUpdate(versionCode)
-            }
-
-            if (prefs.getBoolean("isEnableRemoveDailyRead")) {
-                shieldDailyReading(versionCode)
-            }
-
-            if (prefs.getBoolean("isEnableRemoveChoice")) {
-                shieldChoice(versionCode)
             }
 
             if (optionList.isNotEmpty()) {
@@ -175,7 +213,7 @@ class HookEntry : IYukiHookXposedInit {
         val authorList by lazy {
             val s = getPref()?.getString("AuthorListData", "")
             if (s.isNullOrBlank()) {
-                return@lazy emptyList<String>()
+                return@lazy optionEntity?.shieldOption?.authorList ?: emptyList()
             }
             if (s.contains(";")) {
                 return@lazy s.split(";")
@@ -190,7 +228,8 @@ class HookEntry : IYukiHookXposedInit {
         val bookNameList by lazy {
             val s = getPref()?.getString("BookNameListData", "")
             if (s.isNullOrBlank()) {
-                return@lazy emptyList<String>()
+                return@lazy optionEntity?.shieldOption?.bookNameList ?: emptyList()
+                //return@lazy emptyList()
             }
             if (s.contains(";")) {
                 return@lazy s.split(";")
@@ -205,7 +244,8 @@ class HookEntry : IYukiHookXposedInit {
         val bookTypeList by lazy {
             val s = getPref()?.getString("BookTypeListData", "")
             if (s.isNullOrBlank()) {
-                return@lazy emptyList<String>()
+                return@lazy optionEntity?.shieldOption?.bookTypeList ?: emptyList()
+                //return@lazy emptyList()
             }
             if (s.contains(";")) {
                 return@lazy s.split(";")
@@ -215,10 +255,11 @@ class HookEntry : IYukiHookXposedInit {
         }
 
         /**
-         * 搜索相关的选项
+         * 配置相关的选项
          */
         val optionList by lazy {
-            getPref()?.getStringSet("optionListData", setOf()) ?: setOf()
+            getPref()?.getStringSet("optionListData", setOf())
+                ?: optionEntity?.shieldOption?.shieldOptionValueSet ?: setOf()
         }
 
         /**
@@ -251,6 +292,8 @@ class HookEntry : IYukiHookXposedInit {
             val pref = XSharedPreferences(BuildConfig.APPLICATION_ID)
             return if (pref.file.canRead()) pref else null
         }
+
+        val optionEntity = readOptionEntity()
 
     }
 
@@ -323,7 +366,6 @@ fun printCallStack(className: String = "") {
     loggerE(msg = "Dump Stack: ---------------end----------------")
 }
 
-
 /**
  * 容错安全运行方法
  */
@@ -342,15 +384,27 @@ fun String.write(fileName: String = "test") {
     // 如果文件名已存在 则文件名 + 1
     var index = 0
     while (File(
-            "${Environment.getExternalStorageDirectory().path}/MT2/apks/起点",
+            "${Environment.getExternalStorageDirectory().path}/MT2/apks/起点", "$fileName-$index.txt"
+        ).exists()
+    ) {
+        index++
+    }
+    File(
+        "${Environment.getExternalStorageDirectory().path}/MT2/apks/起点", "$fileName-$index.txt"
+    ).writeText(this)
+}
+
+fun String.writeTextFile(fileName: String = "test") {
+    var index = 0
+    while (File(
+            "${Environment.getExternalStorageDirectory().absolutePath}/QDReader",
             "$fileName-$index.txt"
         ).exists()
     ) {
         index++
     }
     File(
-        "${Environment.getExternalStorageDirectory().path}/MT2/apks/起点",
-        "$fileName-$index.txt"
+        "${Environment.getExternalStorageDirectory().absolutePath}/QDReader", "$fileName-$index.txt"
     ).writeText(this)
 }
 
@@ -939,6 +993,7 @@ fun PackageParam.shieldOption(versionCode: Int, optionValueSet: Set<String>) {
             "8" -> shieldFreeNewBook(versionCode)
             "9" -> shieldHotAndRecommend(versionCode)
             "10" -> shieldNewBookAndRecommend(versionCode)
+            "11" -> shieldDailyReading(versionCode)
         }
     }
     shieldSearch(versionCode, isEnableOption("1"), isEnableOption("2"))
@@ -977,12 +1032,11 @@ fun PackageParam.shieldDailyReading(versionCode: Int) {
                                             array += array.getString(i)
                                         }
                                     }
-                                    val isNeedShield =
-                                        isNeedShield(
-                                            bookName = bookName,
-                                            authorName = authorName,
-                                            bookType = bookTypeArray
-                                        )
+                                    val isNeedShield = isNeedShield(
+                                        bookName = bookName,
+                                        authorName = authorName,
+                                        bookType = bookTypeArray
+                                    )
                                     if (isNeedShield) {
                                         iterator.remove()
                                     }
@@ -1032,12 +1086,11 @@ fun PackageParam.shieldChoice(versionCode: Int) {
                                         array += array.getString(i)
                                     }
                                 }
-                                val isNeedShield =
-                                    isNeedShield(
-                                        bookName = bookName,
-                                        authorName = authorName,
-                                        bookType = bookTypeArray
-                                    )
+                                val isNeedShield = isNeedShield(
+                                    bookName = bookName,
+                                    authorName = authorName,
+                                    bookType = bookTypeArray
+                                )
                                 if (isNeedShield) {
                                     iterator.remove()
                                 }
@@ -1050,7 +1103,6 @@ fun PackageParam.shieldChoice(versionCode: Int) {
         }
         else -> loggerE(msg = "屏蔽精选主页面不支持的版本号为: $versionCode")
     }
-
 }
 
 /**
@@ -1089,12 +1141,9 @@ fun PackageParam.shieldCategory(versionCode: Int) {
                                     if (!subCategoryName.isNullOrBlank()) {
                                         bookTypeArray += subCategoryName
                                     }
-                                    val isNeedShield =
-                                        isNeedShield(
-                                            bookName = null,
-                                            authorName = null,
-                                            bookType = bookTypeArray
-                                        )
+                                    val isNeedShield = isNeedShield(
+                                        bookName = null, authorName = null, bookType = bookTypeArray
+                                    )
                                     if (isNeedShield) {
                                         iterator.remove()
                                     }
@@ -1150,12 +1199,11 @@ fun PackageParam.shieldFreeRecommend(versionCode: Int) {
                                             bookTypeArray += it2.toString()
                                         }
                                     }
-                                    val isNeedShield =
-                                        isNeedShield(
-                                            bookName = bookName,
-                                            authorName = authorName,
-                                            bookType = bookTypeArray
-                                        )
+                                    val isNeedShield = isNeedShield(
+                                        bookName = bookName,
+                                        authorName = authorName,
+                                        bookType = bookTypeArray
+                                    )
                                     if (isNeedShield) {
                                         iterator.remove()
                                     }
@@ -1201,12 +1249,11 @@ fun PackageParam.shieldFreeNewBook(versionCode: Int) {
                                         val item = iterator.next().toJSONString()
                                         val jb = item.parseObject()
                                         val categoryName = jb.getString("CategoryName")
-                                        val isNeedShield =
-                                            isNeedShield(
-                                                bookName = null,
-                                                authorName = null,
-                                                bookType = setOf(categoryName)
-                                            )
+                                        val isNeedShield = isNeedShield(
+                                            bookName = null,
+                                            authorName = null,
+                                            bookType = setOf(categoryName)
+                                        )
                                         if (isNeedShield) {
                                             iterator.remove()
                                         }
@@ -1232,12 +1279,11 @@ fun PackageParam.shieldFreeNewBook(versionCode: Int) {
                                                 bookTypeArray += jsonArray[i].toString()
                                             }
                                         }
-                                        val isNeedShield =
-                                            isNeedShield(
-                                                bookName = bookName,
-                                                authorName = authorName,
-                                                bookType = bookTypeArray
-                                            )
+                                        val isNeedShield = isNeedShield(
+                                            bookName = bookName,
+                                            authorName = authorName,
+                                            bookType = bookTypeArray
+                                        )
                                         if (isNeedShield) {
                                             iterator.remove()
                                         }
@@ -1287,12 +1333,11 @@ fun PackageParam.shieldHotAndRecommend(versionCode: Int) {
                                             array += array.getString(i)
                                         }
                                     }
-                                    val isNeedShield =
-                                        isNeedShield(
-                                            bookName = bookName,
-                                            authorName = authorName,
-                                            bookType = bookTypeArray
-                                        )
+                                    val isNeedShield = isNeedShield(
+                                        bookName = bookName,
+                                        authorName = authorName,
+                                        bookType = bookTypeArray
+                                    )
                                     if (isNeedShield) {
                                         iterator.remove()
                                     }
@@ -1350,12 +1395,11 @@ fun PackageParam.shieldNewBookAndRecommend(versionCode: Int) {
                                                 array += array.getString(i)
                                             }
                                         }
-                                        val isNeedShield =
-                                            isNeedShield(
-                                                bookName = bookName,
-                                                authorName = authorName,
-                                                bookType = bookTypeArray
-                                            )
+                                        val isNeedShield = isNeedShield(
+                                            bookName = bookName,
+                                            authorName = authorName,
+                                            bookType = bookTypeArray
+                                        )
                                         if (isNeedShield) {
                                             iterator.remove()
                                         }
@@ -1400,12 +1444,11 @@ fun PackageParam.shieldCategoryAllBook(versionCode: Int) {
                                         val authorName = jb.getString("authorName")
                                         val bookName = jb.getString("bookName")
                                         val categoryName = jb.getString("categoryName")
-                                        val isNeedShield =
-                                            isNeedShield(
-                                                bookName = bookName,
-                                                authorName = authorName,
-                                                bookType = setOf(categoryName)
-                                            )
+                                        val isNeedShield = isNeedShield(
+                                            bookName = bookName,
+                                            authorName = authorName,
+                                            bookType = setOf(categoryName)
+                                        )
                                         if (isNeedShield) {
                                             iterator.remove()
                                         }
@@ -1456,13 +1499,11 @@ fun PackageParam.shieldSearchFind(versionCode: Int) {
  * @param isNeedShieldTagRank 屏蔽人气标签榜
  */
 fun PackageParam.shieldSearch(
-    versionCode: Int,
-    isNeedShieldBookRank: Boolean,
-    isNeedShieldTagRank: Boolean
+    versionCode: Int, isNeedShieldBookRank: Boolean, isNeedShieldTagRank: Boolean
 ) {
     when (versionCode) {
         788 -> {
-            if (isNeedShieldBookRank){
+            if (isNeedShieldBookRank) {
                 /**
                  * 屏蔽热搜作品榜更多
                  */
@@ -1482,12 +1523,11 @@ fun PackageParam.shieldSearch(
                                         val authorName = jb.getString("AuthorName")
                                         val bookName = jb.getString("BookName")
                                         val categoryName = jb.getString("BookCategory")
-                                        val isNeedShield =
-                                            isNeedShield(
-                                                bookName = bookName,
-                                                authorName = authorName,
-                                                bookType = setOf(categoryName)
-                                            )
+                                        val isNeedShield = isNeedShield(
+                                            bookName = bookName,
+                                            authorName = authorName,
+                                            bookType = setOf(categoryName)
+                                        )
                                         if (isNeedShield) {
                                             iterator.remove()
                                         }
@@ -1520,12 +1560,11 @@ fun PackageParam.shieldSearch(
                                             val item = iterator.next().toJSONString()
                                             val jb = item.parseObject()
                                             val bookName = jb.getString("bookName")
-                                            val isNeedShield =
-                                                isNeedShield(
-                                                    bookName = bookName,
-                                                    authorName = null,
-                                                    bookType = null
-                                                )
+                                            val isNeedShield = isNeedShield(
+                                                bookName = bookName,
+                                                authorName = null,
+                                                bookType = null
+                                            )
                                             if (isNeedShield) {
                                                 iterator.remove()
                                             }
@@ -1556,12 +1595,11 @@ fun PackageParam.shieldSearch(
                                             val item = iterator.next().toJSONString()
                                             val jb = item.parseObject()
                                             val tagName = jb.getString("tagName")
-                                            val isNeedShield =
-                                                isNeedShield(
-                                                    bookName = null,
-                                                    authorName = null,
-                                                    bookType = setOf(tagName)
-                                                )
+                                            val isNeedShield = isNeedShield(
+                                                bookName = null,
+                                                authorName = null,
+                                                bookType = setOf(tagName)
+                                            )
                                             if (isNeedShield) {
                                                 iterator.remove()
                                             }
@@ -1603,6 +1641,162 @@ fun PackageParam.shieldSearchRecommend(versionCode: Int) {
         else -> loggerE(msg = "屏蔽搜索-为你推荐不支持的版本号: $versionCode")
     }
 }
+
+/**
+ * 配置模型
+ * @param mainOption 主配置
+ * @param advOption 广告配置
+ * @param shieldOption 屏蔽配置
+ * @param splashOption 启动配置
+ */
+@Keep
+@Serializable
+data class OptionEntity(
+    @SerialName("advOption") var advOption: AdvOption = AdvOption(),
+    @SerialName("mainOption") var mainOption: MainOption = MainOption(),
+    @SerialName("shieldOption") var shieldOption: ShieldOption = ShieldOption(),
+    @SerialName("splashOption") var splashOption: SplashOption = SplashOption()
+) {
+    /**
+     * 广告配置
+     * @param enableRemoveBookshelfFloat 是否开启移除书架浮窗
+     * @param enableRemoveBookshelfBottomAd 是否开启移除书架底部导航栏广告
+     * @param enableDisableCheckUpdate 是否开启禁止检查更新
+     * @param enableDisableAdv 是否开启禁止广告
+     */
+    @Keep
+    @Serializable
+    data class AdvOption(
+        @SerialName("enableDisableAdv") var enableDisableAdv: Boolean = false,
+        @SerialName("enableDisableCheckUpdate") var enableDisableCheckUpdate: Boolean = false,
+        @SerialName("enableRemoveBookshelfBottomAd") var enableRemoveBookshelfBottomAd: Boolean = false,
+        @SerialName("enableRemoveBookshelfFloat") var enableRemoveBookshelfFloat: Boolean = false
+    )
+
+    /**
+     * 主配置
+     * @param packageName 包名
+     * @param enableAutoSign 是否开启自动签到
+     * @param enableOldLayout 是否开启旧版布局
+     * @param enableLocalCard 是否开启本地至尊卡
+     * @param enableHideBottomDot 是否开启隐藏底部小红点
+     * @param enableDisableQSNModeDialog 是否开启关闭青少年模式弹框
+     */
+    @Keep
+    @Serializable
+    data class MainOption(
+        @SerialName("enableAutoSign") var enableAutoSign: Boolean = false,
+        @SerialName("enableDisableQSNModeDialog") var enableDisableQSNModeDialog: Boolean = false,
+        @SerialName("enableHideBottomDot") var enableHideBottomDot: Boolean = false,
+        @SerialName("enableLocalCard") var enableLocalCard: Boolean = false,
+        @SerialName("enableOldLayout") var enableOldLayout: Boolean = false,
+        @SerialName("packageName") var packageName: String = ""
+    )
+
+    /**
+     * 屏蔽配置
+     * @param shieldOptionValueSet 屏蔽配置值集合
+     * @param authorList 屏蔽作者集合
+     * @param bookTypeList 屏蔽书类集合
+     * @param bookNameList 屏蔽书名集合
+     */
+    @Keep
+    @Serializable
+    data class ShieldOption(
+        @SerialName("authorList") var authorList: List<String> = listOf(),
+        @SerialName("bookNameList") var bookNameList: List<String> = listOf(),
+        @SerialName("bookTypeList") var bookTypeList: List<String> = listOf(),
+        @SerialName("shieldOptionValueSet") var shieldOptionValueSet: Set<String> = setOf()
+    )
+
+    /**
+     * 闪屏页配置
+     * @param enableSplash 是否开启闪屏页
+     * @param enableCustomSplash 是否开启自定义闪屏页
+     * @param enableCustomSplashAllButton 是否开启自定义闪屏页全部按钮
+     * @param customBookId 自定义闪屏页书籍id
+     * @param customSplashType 自定义闪屏页类型
+     * @param customSplashImageFilePath 自定义闪屏页图片路径
+     */
+    @Keep
+    @Serializable
+    data class SplashOption(
+        @SerialName("customBookId") var customBookId: String = "",
+        @SerialName("customSplashImageFilePath") var customSplashImageFilePath: String = "",
+        @SerialName("customSplashType") var customSplashType: Int = 0,
+        @SerialName("enableCustomSplash") var enableCustomSplash: Boolean = false,
+        @SerialName("enableCustomSplashAllButton") var enableCustomSplashAllButton: Boolean = false,
+        @SerialName("enableSplash") var enableSplash: Boolean = false
+    )
+}
+
+/**
+ *读取配置文件模型
+ */
+fun readOptionEntity(): OptionEntity? {
+    val file = readOptionFile() ?: return null
+    return if (file.readText().isNotEmpty()) {
+        try {
+            val kJson = Json {
+                ignoreUnknownKeys = true
+                isLenient = true
+            }
+            kJson.decodeFromString<OptionEntity>(file.readText())
+        } catch (e: Exception) {
+            loggerE(msg = "readOptionFile: ${e.message}")
+            defaultOptionEntity()
+        }
+    } else {
+        defaultOptionEntity()
+    }
+}
+
+/**
+ * 读取配置文件
+ */
+fun readOptionFile(): File? {
+    try {
+        val file =
+            File("${Environment.getExternalStorageDirectory().absolutePath}/QDReader", "option.json")
+        return if (!file.exists()) {
+            null
+        } else file
+    }catch (e: Exception) {
+        loggerE(msg = "readOptionFile: ${e.message}")
+    }
+    return null
+}
+
+/**
+ * 返回一个默认的配置模型
+ */
+fun defaultOptionEntity(): OptionEntity = OptionEntity(
+    mainOption = OptionEntity.MainOption(
+        packageName = "com.qidian.QDReader",
+        enableAutoSign = true,
+        enableOldLayout = false,
+        enableLocalCard = true,
+        enableHideBottomDot = true,
+        enableDisableQSNModeDialog = true
+    ), advOption = OptionEntity.AdvOption(
+        enableRemoveBookshelfFloat = true,
+        enableRemoveBookshelfBottomAd = true,
+        enableDisableCheckUpdate = true,
+        enableDisableAdv = true
+    ), shieldOption = OptionEntity.ShieldOption(
+        shieldOptionValueSet = mutableSetOf(),
+        authorList = mutableListOf(),
+        bookTypeList = mutableListOf(),
+        bookNameList = mutableListOf()
+    ), splashOption = OptionEntity.SplashOption(
+        enableSplash = false,
+        enableCustomSplash = false,
+        enableCustomSplashAllButton = false,
+        customBookId = "",
+        customSplashType = 0,
+        customSplashImageFilePath = ""
+    )
+)
 
 
 

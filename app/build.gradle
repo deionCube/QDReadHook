@@ -1,6 +1,7 @@
 plugins {
     id 'com.android.application'
     id 'org.jetbrains.kotlin.android'
+    id 'org.jetbrains.kotlin.plugin.serialization'
     id 'com.google.devtools.ksp'
 }
 
@@ -105,6 +106,7 @@ dependencies {
     implementation "androidx.appcompat:appcompat:$appcompatVersion"
     implementation "com.google.android.material:material:$materialVersion"
     implementation 'androidx.preference:preference-ktx:1.2.0'
+    implementation "org.jetbrains.kotlinx:kotlinx-serialization-json:1.4.0"
     implementation("com.alibaba.fastjson2:fastjson2-kotlin:2.0.12.android")
 
     // 基础依赖
