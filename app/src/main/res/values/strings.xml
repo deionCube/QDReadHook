@@ -1,67 +1,10 @@
 <resources>
     <string name="app_name">QD</string>
-    <!-- Preference Titles -->
-    <string name="main_title">主要</string>
-    <!--包名设置-->
-    <string name="packageName">包名设置</string>
-    <!-- 功能 -->
-    <string name="function">功能相关</string>
-    <!--启用自动签到-->
-    <string name="sw_autosignin">自动签到</string>
-    <!--启用旧版布局-->
-    <string name="sw_old_layout">启用旧版布局</string>
-    <!--本地至尊卡-->
-    <string name="sw_local_card">启用本地至尊卡</string>
-    <!--启用隐藏底部小红点-->
-    <string name="sw_hide_bottom_dot">启用隐藏底部小红点</string>
-    <!--启用关闭青少年模式弹框-->
-    <string name="sw_close_qingshaonian_mode">启用关闭青少年模式弹框</string>
+
     <!--其他-->
-    <string name="other">其他</string>
+    <string name="other">使用说明以及开源地址</string>
     <!--开源地址-->
-    <string name="open_source_address">开源地址</string>
+    <string name="github_open_source_address">Github</string>
     <!--开源地址Url-->
     <string name="url">https://github.com/xihan123/QDReadHook</string>
-
-
-    <!--广告相关-->
-    <string name="ads_title">广告相关</string>
-    <!--去书架右下角浮窗-->
-    <string name="sw_bookshelf_float">去书架右下角浮窗</string>
-    <!--去除底部导航栏中心广告-->
-    <string name="sw_bottom_ad">去除底部导航栏中心广告</string>
-    <!--禁用获取广告-->
-    <string name="sw_disable_ad">禁用tx广告</string>
-
-    <!-- 闪屏页相关 -->
-    <string name="splash_title">闪屏页相关</string>
-    <!--启用闪屏页-->
-    <string name="sw_enable_splash">启用闪屏页</string>
-    <!--自定义闪屏页-->
-    <string name="sw_custom_splash">自定义闪屏页</string>
-    <!--自定义闪屏页图片-->
-    <string name="custom_splash_image">自定义闪屏页图片地址</string>
-    <!--自定义闪屏页图片说明-->
-    <string name="custom_splash_image_hint">填入图片所在绝对路径,如失败请给起点存储权限,或检查是否填写正确,留空默认</string>
-    <!--自定义闪屏页类型-->
-    <string name="custom_splash_image_type">自定义闪屏页类型</string>
-    <!--自定义闪屏页启用显示全部按钮-->
-    <string name="sw_show_all_btn">自定义闪屏页启用显示全部按钮</string>
-    <!--自定义跳转到指定书详情页-->
-    <string name="custom_book_detail">闪屏页自定义跳转到指定书详情页</string>
-    <!--自定义跳转到指定书详情页说明-->
-    <string name="custom_book_detail_hint">填入书籍的BookId,详情页分享链接里面"bookid="后面到"&amp;"前那串数字就是了</string>
-    <string name="sw_remove_update">禁用检查更新</string>
-    <string name="ads_title_2">屏蔽相关</string>
-    <string name="sw_remove_author">启用屏蔽作者</string>
-    <string name="sw_remove_book_name">屏蔽书名关键词</string>
-    <string name="lp_remove_author_list">需要屏蔽的作者列表</string>
-    <string name="et_add_author">填入需要屏蔽的完整作者名称\n使用";"分隔</string>
-    <string name="et_add_book_name">填入需要的屏蔽书名关键词\n注意:单字威力巨大!\n使用";"分隔</string>
-    <string name="sw_remove_book_type">启用屏蔽书类型</string>
-    <string name="et_add_book_type">填入需要的屏蔽书类型\n使用";"分隔</string>
-    <string name="et_add_option">屏蔽选项列表</string>
-    <string name="et_add_option_summary">勾选上需要屏蔽的位置</string>
-
-
 </resources>

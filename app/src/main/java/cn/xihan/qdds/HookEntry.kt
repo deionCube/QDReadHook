@@ -1,7 +1,9 @@
 package cn.xihan.qdds
 
+import android.app.Activity
 import android.content.Context
-import android.content.SharedPreferences
+import android.content.Intent
+import android.net.Uri
 import android.os.Build
 import android.os.Environment
 import android.view.View
@@ -9,6 +11,8 @@ import android.widget.*
 import androidx.annotation.Keep
 import cn.xihan.qdds.HookEntry.Companion.isEnableOption
 import cn.xihan.qdds.HookEntry.Companion.isNeedShield
+import cn.xihan.qdds.HookEntry.Companion.optionEntity
+import cn.xihan.qdds.HookEntry.Companion.parseKeyWordOption
 import com.alibaba.fastjson2.parseObject
 import com.alibaba.fastjson2.toJSONString
 import com.highcapable.yukihookapi.YukiHookAPI
@@ -21,13 +25,14 @@ import com.highcapable.yukihookapi.hook.type.android.ActivityClass
 import com.highcapable.yukihookapi.hook.type.android.ContextClass
 import com.highcapable.yukihookapi.hook.type.java.*
 import com.highcapable.yukihookapi.hook.xposed.proxy.IYukiHookXposedInit
-import de.robv.android.xposed.XSharedPreferences
 import de.robv.android.xposed.XposedHelpers.*
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import java.io.File
+import kotlin.system.exitProcess
 
 
 /**
@@ -52,6 +57,55 @@ class HookEntry : IYukiHookXposedInit {
         loadApp(name = QD_PACKAGE_NAME) {
 
             //loggerE(msg = "authorList: ${authorList}\nbookNameList: ${bookNameList}\nbookTypeList:${bookTypeList}")
+
+            if (optionEntity.mainOption.enableAutoSign) {
+                autoSignIn(versionCode, optionEntity.mainOption.enableOldLayout)
+            }
+
+            if (optionEntity.mainOption.enableOldLayout) {
+                enableOldLayout(versionCode)
+            }
+
+            if (optionEntity.mainOption.enableLocalCard) {
+                enableLocalCard(versionCode)
+            }
+
+            if (optionEntity.mainOption.enableHideBottomDot) {
+                hideBottomRedDot(versionCode)
+            }
+
+            if (optionEntity.mainOption.enableDisableQSNModeDialog) {
+                removeQSNYDialog(versionCode)
+            }
+
+            if (optionEntity.advOption.enableRemoveBookshelfFloat) {
+                removeBookshelfFloatWindow(versionCode)
+            }
+
+            if (optionEntity.advOption.enableRemoveBookshelfBottomAd) {
+                removeBottomNavigationCenterAd(versionCode)
+            }
+
+            if (optionEntity.advOption.enableDisableCheckUpdate) {
+                removeUpdate(versionCode)
+            }
+
+            if (optionEntity.advOption.enableDisableAdv) {
+                disableAd(versionCode)
+            }
+
+            splashPage(
+                versionCode = versionCode,
+                isEnableSplash = optionEntity.splashOption.enableSplash,
+                isEnableCustomSplash = optionEntity.splashOption.enableCustomSplash
+            )
+
+            if (optionList.isNotEmpty()) {
+                shieldOption(versionCode, optionList)
+            }
+
+
+            /*
 
             safeRun {
                 optionEntity?.let {
@@ -136,6 +190,8 @@ class HookEntry : IYukiHookXposedInit {
                 shieldOption(versionCode, optionList)
             }
 
+             */
+
             /**
              * 开启OkHttp3 日志拦截器
              */
@@ -190,6 +246,80 @@ class HookEntry : IYukiHookXposedInit {
 
              */
 
+            findClass("com.qidian.QDReader.ui.activity.MoreActivity").hook {
+                injectMember {
+                    method {
+                        name = "initWidget"
+                        emptyParam()
+                        returnType = UnitType
+                    }
+                    afterHook {
+                        safeRun {
+                            val readMoreSetting =
+                                getView<RelativeLayout>(instance, "readMoreSetting")
+                            // 获取 readMoreSetting 子控件
+                            val readMoreSettingChild = readMoreSetting?.getChildAt(0) as? TextView
+                            readMoreSettingChild?.text = "阅读设置/模块设置(长按)"
+
+                            readMoreSetting?.setOnLongClickListener {
+                                instance<Activity>().apply {
+                                    safeRun {
+                                        val linearLayout = CustomLinearLayout(this)
+                                        val mainOptionTextView = CustomTextView(
+                                            context = this, mText = "主设置", isBold = true
+                                        ) {
+                                            showMainOptionDialog()
+                                        }
+                                        val advOptionTextView = CustomTextView(
+                                            context = this, mText = "广告相关设置", isBold = true
+                                        ) {
+                                            showAdvOptionDialog()
+                                        }
+                                        val shieldOptionTextView = CustomTextView(
+                                            context = this, mText = "屏蔽相关设置", isBold = true
+                                        ) {
+                                            showShieldOptionDialog()
+                                        }
+                                        val splashOptionTextView = CustomTextView(
+                                            context = this, mText = "闪屏相关设置", isBold = true
+                                        ) {
+                                            showSplashOptionDialog()
+                                        }
+                                        val openSourceryOptionTextView = CustomTextView(
+                                            context = this,
+                                            mText = "开源地址及详细说明",
+                                            isBold = true
+                                        ) {
+                                            val intent = Intent(Intent.ACTION_VIEW)
+                                            intent.data = Uri.parse("https://github.com/xihan123/QDReadHook")
+                                            startActivity(intent)
+                                        }
+                                        linearLayout.addView(mainOptionTextView)
+                                        linearLayout.addView(advOptionTextView)
+                                        linearLayout.addView(shieldOptionTextView)
+                                        linearLayout.addView(splashOptionTextView)
+                                        linearLayout.addView(openSourceryOptionTextView)
+
+                                        alertDialog {
+                                            title = "模块设置"
+                                            customView = linearLayout
+
+                                            positiveButton("确定并重启起点") {
+                                                restartApplication()
+                                            }
+
+                                            build()
+                                            show()
+                                        }
+                                    }
+                                }
+                                true
+                            }
+                        }
+                    }
+                }
+            }
+
         }
 
 
@@ -202,7 +332,7 @@ class HookEntry : IYukiHookXposedInit {
          * 起点包名
          */
         val QD_PACKAGE_NAME by lazy {
-            getPref()?.getString("packageName", "com.qidian.QDReader") ?: "com.qidian.QDReader"
+            optionEntity.mainOption.packageName
         }
 
         val versionCode by lazy { getApplicationVersionCode(QD_PACKAGE_NAME) }
@@ -211,62 +341,39 @@ class HookEntry : IYukiHookXposedInit {
          * 需要屏蔽的作者列表
          */
         val authorList by lazy {
-            val s = getPref()?.getString("AuthorListData", "")
-            if (s.isNullOrBlank()) {
-                return@lazy optionEntity?.shieldOption?.authorList ?: emptyList()
-            }
-            if (s.contains(";")) {
-                return@lazy s.split(";")
-            } else {
-                listOf(s)
-            }
+            optionEntity.shieldOption.authorList
         }
 
         /**
          * 需要屏蔽的书名关键词列表
          */
         val bookNameList by lazy {
-            val s = getPref()?.getString("BookNameListData", "")
-            if (s.isNullOrBlank()) {
-                return@lazy optionEntity?.shieldOption?.bookNameList ?: emptyList()
-                //return@lazy emptyList()
-            }
-            if (s.contains(";")) {
-                return@lazy s.split(";")
-            } else {
-                listOf(s)
-            }
+            optionEntity.shieldOption.bookNameList
         }
 
         /**
          * 需要屏蔽的书籍类型列表
          */
         val bookTypeList by lazy {
-            val s = getPref()?.getString("BookTypeListData", "")
-            if (s.isNullOrBlank()) {
-                return@lazy optionEntity?.shieldOption?.bookTypeList ?: emptyList()
-                //return@lazy emptyList()
-            }
-            if (s.contains(";")) {
-                return@lazy s.split(";")
-            } else {
-                listOf(s)
-            }
+            optionEntity.shieldOption.bookTypeList
         }
 
         /**
          * 配置相关的选项
          */
         val optionList by lazy {
-            getPref()?.getStringSet("optionListData", setOf())
-                ?: optionEntity?.shieldOption?.shieldOptionValueSet ?: setOf()
+            optionEntity.shieldOption.shieldOptionValueSet
+        }
+
+        private val enableBookTypeEnhancedBlocking by lazy {
+            optionEntity.shieldOption.enableBookTypeEnhancedBlocking
         }
 
         /**
          * 判断是否启用了该选项
          * @param optionValue 选项的值
          */
-        fun isEnableOption(optionValue: String) = optionList.any { it == optionValue }
+        fun isEnableOption(optionValue: Int) = optionList.any { it == optionValue }
 
         /**
          * 判断是否需要屏蔽
@@ -274,23 +381,56 @@ class HookEntry : IYukiHookXposedInit {
          * @param authorName 作者名-可空
          * @param bookType 书类型-可空
          */
-        fun isNeedShield(bookName: String?, authorName: String?, bookType: Set<String>?): Boolean {
+        fun isNeedShield(
+            bookName: String?,
+            authorName: String?,
+            bookType: Set<String>?
+        ): Boolean {
             //loggerE(msg = "bookName: $bookName\nauthorName:$authorName\nbookType:$bookType")
-            if (!bookName.isNullOrBlank() && bookNameList.any { it in bookName }) {
-                return true
+            if (bookNameList.isNotEmpty()) {
+                if (!bookName.isNullOrBlank() && bookNameList.any { it in bookName }) {
+                    return true
+                }
             }
-            if (!authorName.isNullOrBlank() && authorList.any { authorName == it }) {
-                return true
+            if (authorList.isNotEmpty()) {
+                if (!authorName.isNullOrBlank() && authorList.any { authorName == it }) {
+                    return true
+                }
             }
-            if (!bookType.isNullOrEmpty() && bookType.any { it in bookTypeList }) {
-                return true
+            if (bookTypeList.isNotEmpty() && !bookType.isNullOrEmpty()) {
+                if (enableBookTypeEnhancedBlocking) {
+                    if (bookType.isNotEmpty() && bookType.any { bookTypeList.any { it1 -> it1 in it } }) {
+                        return true
+                    }
+                } else {
+                    if (bookType.isNotEmpty() && bookType.any { it in bookTypeList }) {
+                        return true
+                    }
+                }
             }
             return false
         }
 
-        fun getPref(): SharedPreferences? {
-            val pref = XSharedPreferences(BuildConfig.APPLICATION_ID)
-            return if (pref.file.canRead()) pref else null
+        /**
+         * 解析关键词组
+         * @param it 关键词组
+         */
+        fun parseKeyWordOption(it: String = ""): List<String> {
+            return try {
+                if (it.isBlank()) {
+                    listOf()
+                } else if (it.contains(";")) {
+                    if (it.endsWith(";")) {
+                        it.substring(0, it.length - 1).split(";").toList()
+                    } else {
+                        it.split(";").toList()
+                    }
+                } else {
+                    listOf(it)
+                }
+            } catch (e: Exception) {
+                listOf()
+            }
         }
 
         val optionEntity = readOptionEntity()
@@ -338,6 +478,18 @@ fun getApplicationApkPath(packageName: String): String {
     val pm = getSystemContext().packageManager
     val apkPath = pm.getApplicationInfo(packageName, 0).publicSourceDir
     return apkPath ?: throw Error("Failed to get the APK path of $packageName")
+}
+
+/**
+ * 重启当前应用
+ */
+fun Activity.restartApplication() {
+    // https://stackoverflow.com/a/58530756
+    val pm = packageManager
+    val intent = pm.getLaunchIntentForPackage(packageName)
+    finishAffinity()
+    startActivity(intent)
+    exitProcess(0)
 }
 
 /**
@@ -408,8 +560,10 @@ fun String.writeTextFile(fileName: String = "test") {
     ).writeText(this)
 }
 
-fun PackageParam.autoSignIn(versionCode: Int) {
-    if (prefs.getBoolean("isEnableOldLayout")) {
+fun PackageParam.autoSignIn(
+    versionCode: Int, isEnableOldLayout: Boolean = false
+) {
+    if (isEnableOldLayout) {
         oldAutoSignIn(versionCode)
     } else {
         newAutoSignIn(versionCode)
@@ -506,7 +660,6 @@ fun PackageParam.enableOldLayout(versionCode: Int) {
  * Hook 启用本地至尊卡
  */
 fun PackageParam.enableLocalCard(versionCode: Int) {
-
     when (versionCode) {
         in 758..800 -> {
 
@@ -528,7 +681,6 @@ fun PackageParam.enableLocalCard(versionCode: Int) {
         }
         else -> loggerE(msg = "启用本地至尊卡不支持的版本号为: $versionCode")
     }
-
 }
 
 /**
@@ -689,9 +841,11 @@ fun PackageParam.disableAd(versionCode: Int) {
 /**
  * Hook 闪屏页相关
  */
-fun PackageParam.splashPage(versionCode: Int) {
-    if (prefs.getBoolean("isEnableSplash")) {
-        if (prefs.getBoolean("isEnableCustomSplash")) {
+fun PackageParam.splashPage(
+    versionCode: Int, isEnableSplash: Boolean = false, isEnableCustomSplash: Boolean = false
+) {
+    if (isEnableSplash) {
+        if (isEnableCustomSplash) {
             enableCustomSplash(versionCode)
         }
     } else {
@@ -739,11 +893,17 @@ fun PackageParam.disableSplash(versionCode: Int) {
 /**
  * 启用自定义闪屏页
  */
-fun PackageParam.enableCustomSplash(versionCode: Int) {
+fun PackageParam.enableCustomSplash(
+    versionCode: Int,
+    isEnableCustomSplashImageShowAllButton: Boolean = false,
+    customSplashImageFilePath: String = "",
+    customBookId: String = "",
+    customSplashImageType: Int = 0
+) {
     when (versionCode) {
         in 758..800 -> {
             findClass("com.qidian.QDReader.ui.activity.SplashImageActivity").hook {
-                if (!prefs.getBoolean("isEnableCustomSplashImageShowAllButton")) {
+                if (!isEnableCustomSplashImageShowAllButton) {
                     injectMember {
                         method {
                             name = "onCreate"
@@ -774,16 +934,13 @@ fun PackageParam.enableCustomSplash(versionCode: Int) {
                     }
 
                     beforeHook {
-                        val customSplashImageFilePath = prefs.getString("customSplashImageFilePath")
                         if (customSplashImageFilePath.isNotBlank()) {
                             args(index = 1).set(customSplashImageFilePath)
                         }
-                        val customBookId = prefs.getString("customBookId")
                         if (customBookId.isNotBlank()) {
                             args(index = 2).set("QDReader://ShowBook/$customBookId")
                         }
-
-                        args(index = 4).set(prefs.getInt("customSplashImageType", 0))
+                        args(index = 4).set(customSplashImageType)
                     }
 
                     afterHook {
@@ -980,23 +1137,23 @@ fun PackageParam.removeUpdate(versionCode: Int) {
  * @param versionCode 版本号
  * @param optionValueSet 屏蔽选项值
  */
-fun PackageParam.shieldOption(versionCode: Int, optionValueSet: Set<String>) {
+fun PackageParam.shieldOption(versionCode: Int, optionValueSet: Set<Int>) {
     // 遍历 optionValueSet 包含的值 执行指定方法
     optionValueSet.forEach {
         when (it) {
-            "0" -> shieldSearchFind(versionCode)
-            "3" -> shieldSearchRecommend(versionCode)
-            "4" -> shieldChoice(versionCode)
-            "5" -> shieldCategory(versionCode)
-            "6" -> shieldCategoryAllBook(versionCode)
-            "7" -> shieldFreeRecommend(versionCode)
-            "8" -> shieldFreeNewBook(versionCode)
-            "9" -> shieldHotAndRecommend(versionCode)
-            "10" -> shieldNewBookAndRecommend(versionCode)
-            "11" -> shieldDailyReading(versionCode)
+            0 -> shieldSearchFind(versionCode)
+            3 -> shieldSearchRecommend(versionCode)
+            4 -> shieldChoice(versionCode)
+            5 -> shieldCategory(versionCode)
+            6 -> shieldCategoryAllBook(versionCode)
+            7 -> shieldFreeRecommend(versionCode)
+            8 -> shieldFreeNewBook(versionCode)
+            9 -> shieldHotAndRecommend(versionCode)
+            10 -> shieldNewBookAndRecommend(versionCode)
+            11 -> shieldDailyReading(versionCode)
         }
     }
-    shieldSearch(versionCode, isEnableOption("1"), isEnableOption("2"))
+    shieldSearch(versionCode, isEnableOption(1), isEnableOption(2))
 }
 
 /**
@@ -1699,6 +1856,7 @@ data class OptionEntity(
      * @param authorList 屏蔽作者集合
      * @param bookTypeList 屏蔽书类集合
      * @param bookNameList 屏蔽书名集合
+     * @param enableBookTypeEnhancedBlocking 启用书类型增强屏蔽
      */
     @Keep
     @Serializable
@@ -1706,7 +1864,8 @@ data class OptionEntity(
         @SerialName("authorList") var authorList: List<String> = listOf(),
         @SerialName("bookNameList") var bookNameList: List<String> = listOf(),
         @SerialName("bookTypeList") var bookTypeList: List<String> = listOf(),
-        @SerialName("shieldOptionValueSet") var shieldOptionValueSet: Set<String> = setOf()
+        @SerialName("shieldOptionValueSet") var shieldOptionValueSet: MutableSet<Int> = mutableSetOf(),
+        @SerialName("enableBookTypeEnhancedBlocking") var enableBookTypeEnhancedBlocking: Boolean = false
     )
 
     /**
@@ -1733,15 +1892,15 @@ data class OptionEntity(
 /**
  *读取配置文件模型
  */
-fun readOptionEntity(): OptionEntity? {
-    val file = readOptionFile() ?: return null
+fun readOptionEntity(): OptionEntity {
+    val file = readOptionFile() ?: return defaultOptionEntity()
     return if (file.readText().isNotEmpty()) {
         try {
             val kJson = Json {
                 ignoreUnknownKeys = true
                 isLenient = true
             }
-            kJson.decodeFromString<OptionEntity>(file.readText())
+            kJson.decodeFromString(file.readText())
         } catch (e: Exception) {
             loggerE(msg = "readOptionFile: ${e.message}")
             defaultOptionEntity()
@@ -1756,15 +1915,29 @@ fun readOptionEntity(): OptionEntity? {
  */
 fun readOptionFile(): File? {
     try {
-        val file =
-            File("${Environment.getExternalStorageDirectory().absolutePath}/QDReader", "option.json")
-        return if (!file.exists()) {
-            null
-        } else file
-    }catch (e: Exception) {
+        val file = File(
+            "${Environment.getExternalStorageDirectory().absolutePath}/QDReader", "option.json"
+        )
+        if (!file.exists()) {
+            file.createNewFile()
+            file.writeText(Json.encodeToString(defaultOptionEntity()))
+        }
+        return file
+    } catch (e: Exception) {
         loggerE(msg = "readOptionFile: ${e.message}")
     }
     return null
+}
+
+/**
+ * 写入配置文件
+ */
+fun writeOptionFile(optionEntity: OptionEntity) {
+    try {
+        readOptionFile()?.writeText(Json.encodeToString(optionEntity))
+    } catch (e: Exception) {
+        loggerE(msg = "writeOptionFile: ${e.message}")
+    }
 }
 
 /**
@@ -1798,7 +1971,303 @@ fun defaultOptionEntity(): OptionEntity = OptionEntity(
     )
 )
 
+/**
+ * 更新配置
+ */
+fun updateOptionEntity(): Boolean = try {
+    writeOptionFile(optionEntity)
+    true
+} catch (e: Exception) {
+    false
+}
 
+/**
+ * dp 转 px
+ */
+fun Context.dp2px(dp: Float): Int {
+    val scale = resources.displayMetrics.density
+    return (dp * scale + 0.5f).toInt()
+}
+
+/**
+ * 主要配置弹框
+ * @param mainOption 配置模型
+ */
+fun Context.showMainOptionDialog() {
+    val linearLayout = CustomLinearLayout(this, isAutoWidth = false)
+    val packageNameOption = CustomEditText(
+        context = this,
+        title = "包名设置",
+        message = "一般默认即可,不建议更改",
+        value = optionEntity.mainOption.packageName
+    ) {
+        optionEntity.mainOption.packageName = it
+    }
+    val enableAutoSignOption = CustomSwitch(
+        context = this, title = "启用自动签到", isEnable = optionEntity.mainOption.enableAutoSign
+    ) {
+        optionEntity.mainOption.enableAutoSign = it
+    }
+    val enableOldLayoutOption = CustomSwitch(
+        context = this, title = "启用旧版布局", isEnable = optionEntity.mainOption.enableOldLayout
+    ) {
+        optionEntity.mainOption.enableOldLayout = it
+    }
+    val enableLocalCardOption = CustomSwitch(
+        context = this, title = "启用本地至尊卡", isEnable = optionEntity.mainOption.enableLocalCard
+    ) {
+        optionEntity.mainOption.enableLocalCard = it
+    }
+    val enableHideBottomDotOption = CustomSwitch(
+        context = this, title = "隐藏底部小红点", isEnable = optionEntity.mainOption.enableHideBottomDot
+    ) {
+        optionEntity.mainOption.enableHideBottomDot = it
+    }
+    val enableDisableQSNModeDialogOption = CustomSwitch(
+        context = this,
+        title = "关闭青少年模式弹框",
+        isEnable = optionEntity.mainOption.enableDisableQSNModeDialog
+    ) {
+        optionEntity.mainOption.enableDisableQSNModeDialog = it
+    }
+    linearLayout.addView(packageNameOption)
+    linearLayout.addView(enableAutoSignOption)
+    linearLayout.addView(enableOldLayoutOption)
+    linearLayout.addView(enableLocalCardOption)
+    linearLayout.addView(enableHideBottomDotOption)
+    linearLayout.addView(enableDisableQSNModeDialogOption)
+    alertDialog {
+        title = "主要配置"
+        customView = linearLayout
+        okButton {
+            updateOptionEntity()
+        }
+        negativeButton("返回") {
+            it.dismiss()
+        }
+
+        build()
+        show()
+    }
+}
+
+/**
+ * 广告配置弹框
+ */
+fun Context.showAdvOptionDialog() {
+    val linearLayout = CustomLinearLayout(this, isAutoWidth = false)
+    val enableRemoveBookshelfFloatOption = CustomSwitch(
+        context = this,
+        title = "移除书架右下角浮窗",
+        isEnable = optionEntity.advOption.enableRemoveBookshelfFloat
+    ) {
+        optionEntity.advOption.enableRemoveBookshelfFloat = it
+    }
+    val enableRemoveBookshelfBottomAdOption = CustomSwitch(
+        context = this,
+        title = "移除底部导航栏中心广告",
+        isEnable = optionEntity.advOption.enableRemoveBookshelfBottomAd
+    ) {
+        optionEntity.advOption.enableRemoveBookshelfBottomAd = it
+    }
+    val enableDisableCheckUpdateOption = CustomSwitch(
+        context = this, title = "禁用检查更新", isEnable = optionEntity.advOption.enableDisableCheckUpdate
+    ) {
+        optionEntity.advOption.enableDisableCheckUpdate = it
+    }
+    val enableDisableAdvOption = CustomSwitch(
+        context = this, title = "禁用TX广告", isEnable = optionEntity.advOption.enableDisableAdv
+    ) {
+        optionEntity.advOption.enableDisableAdv = it
+    }
+    linearLayout.addView(enableRemoveBookshelfFloatOption)
+    linearLayout.addView(enableRemoveBookshelfBottomAdOption)
+    linearLayout.addView(enableDisableCheckUpdateOption)
+    linearLayout.addView(enableDisableAdvOption)
+    alertDialog {
+        title = "广告配置"
+        customView = linearLayout
+        okButton {
+            updateOptionEntity()
+        }
+        negativeButton("返回") {
+            it.dismiss()
+        }
+        build()
+        show()
+    }
+
+}
+
+/**
+ * 屏蔽相关配置弹框
+ */
+fun Context.showShieldOptionDialog() {
+    val linearLayout = CustomLinearLayout(this, isAutoWidth = false)
+    val customTextView = CustomTextView(
+        context = this, mText = "屏蔽选项列表", isBold = true
+    ) {
+        val shieldOptionList = listOf(
+            "搜索-发现(热词)",
+            "搜索-热门作品榜",
+            "搜索-人气标签榜",
+            "搜索-为你推荐",
+            "精选-主页面",
+            "精选-分类",
+            "精选-分类-全部作品",
+            "精选-免费-免费推荐",
+            "精选-免费-新书入库",
+            "精选-畅销精选、主编力荐等更多",
+            "精选-新书强推、三江推荐",
+            "每日导读"
+        )
+        val checkedItems = BooleanArray(shieldOptionList.size)
+        if (optionEntity.shieldOption.shieldOptionValueSet.isNotEmpty()) {
+            safeRun {
+                shieldOptionList.forEachIndexed { index, _ ->
+                    if (index in optionEntity.shieldOption.shieldOptionValueSet) {
+                        checkedItems[index] = true
+                    }
+                }
+            }
+        }
+        multiChoiceSelector(shieldOptionList, checkedItems, "屏蔽选项列表") { _, i, isChecked ->
+            checkedItems[i] = isChecked
+        }.doOnDismiss {
+            checkedItems.forEachIndexed { index, b ->
+                if (b) {
+                    optionEntity.shieldOption.shieldOptionValueSet += index
+                } else {
+                    optionEntity.shieldOption.shieldOptionValueSet -= index
+                }
+            }
+        }
+    }
+    val authorNameOptionCustomEdit = CustomEditText(
+        context = this,
+        title = "填入需要屏蔽的完整作者名称",
+        message = "使用 \";\" 分隔",
+        value = optionEntity.shieldOption.authorList.joinToString(";")
+    ) {
+        optionEntity.shieldOption.authorList = parseKeyWordOption(it)
+    }
+    val bookNameOptionCustomEdit = CustomEditText(
+        context = this,
+        title = "填入需要屏蔽的书名关键词",
+        message = "注意:单字威力巨大!!!\n使用 \";\" 分隔",
+        value = optionEntity.shieldOption.bookNameList.joinToString(";")
+    ) {
+        optionEntity.shieldOption.bookNameList = parseKeyWordOption(it)
+    }
+    val bookTypeSwitch = CustomSwitch(
+        context = this,
+        title = "启用书类型增强屏蔽",
+        isEnable = optionEntity.shieldOption.enableBookTypeEnhancedBlocking
+    ) {
+        optionEntity.shieldOption.enableBookTypeEnhancedBlocking = it
+    }
+    val bookTypeOptionCustomEdit = CustomEditText(
+        context = this,
+        title = "填入需要屏蔽的书类型",
+        message = "使用 \";\" 分隔",
+        value = optionEntity.shieldOption.bookTypeList.joinToString(";")
+    ) {
+        optionEntity.shieldOption.bookTypeList = parseKeyWordOption(it)
+    }
+    linearLayout.addView(customTextView)
+    linearLayout.addView(authorNameOptionCustomEdit)
+    linearLayout.addView(bookNameOptionCustomEdit)
+    linearLayout.addView(bookTypeSwitch)
+    linearLayout.addView(bookTypeOptionCustomEdit)
+    alertDialog {
+        title = "屏蔽相关配置"
+        customView = linearLayout
+        okButton {
+            updateOptionEntity()
+        }
+        negativeButton("返回") {
+            it.dismiss()
+        }
+        build()
+        show()
+    }
+
+}
+
+/**
+ * 闪屏页相关配置弹框
+ */
+fun Context.showSplashOptionDialog() {
+    val linearLayout = CustomLinearLayout(this, isAutoWidth = false)
+    val enableSplashOptionSwitch = CustomSwitch(
+        context = this,
+        title = "启用闪屏页",
+        isEnable = optionEntity.splashOption.enableSplash
+    ) {
+        optionEntity.splashOption.enableSplash = it
+    }
+    val enableCustomSplashOptionSwitch = CustomSwitch(
+        context = this,
+        title = "启用自定义闪屏页",
+        isAvailable = optionEntity.splashOption.enableSplash,
+        isEnable = optionEntity.splashOption.enableCustomSplash
+    ) {
+        optionEntity.splashOption.enableCustomSplash = it
+    }
+    val customSplashEnableShowAllButtonOptionSwitch = CustomSwitch(
+        context = this,
+        title = "启用闪屏页显示全部按钮",
+        isAvailable = optionEntity.splashOption.enableCustomSplash,
+        isEnable = optionEntity.splashOption.enableCustomSplashAllButton
+    ) {
+        optionEntity.splashOption.enableCustomSplashAllButton = it
+    }
+    val splashCustomToBookEditText = CustomEditText(
+        context = this,
+        title = "填入自定义闪屏页跳转到书籍页面的关键词",
+        message = "填入书籍的BookId,详情页分享链接里面\"bookid=\"后面到\"&\"前那串数字就是了",
+        value = optionEntity.splashOption.customBookId,
+        isAvailable = optionEntity.splashOption.enableCustomSplash
+    ) {
+        optionEntity.splashOption.customBookId = it
+    }
+    val splashCustomTypeOptionEdit = CustomEditText(
+        context = this,
+        title = "自定义闪屏页类型",
+        message = "填入 0 或者 1 其他数字可能无效喔~",
+        value = optionEntity.splashOption.customSplashType.toString(),
+        isAvailable = optionEntity.splashOption.enableCustomSplash
+    ) {
+        optionEntity.splashOption.customSplashType = it.toInt()
+    }
+    val splashCustomImageEditText = CustomEditText(
+        context = this,
+        title = "自定义闪屏页图片",
+        message = "填入图片所在绝对路径,如失败请给起点存储权限,或检查是否填写正确,留空默认",
+        value = optionEntity.splashOption.customSplashImageFilePath,
+        isAvailable = optionEntity.splashOption.enableCustomSplash
+    ) {
+        optionEntity.splashOption.customSplashImageFilePath = it
+    }
+    linearLayout.addView(enableSplashOptionSwitch)
+    linearLayout.addView(enableCustomSplashOptionSwitch)
+    linearLayout.addView(customSplashEnableShowAllButtonOptionSwitch)
+    linearLayout.addView(splashCustomToBookEditText)
+    linearLayout.addView(splashCustomTypeOptionEdit)
+    linearLayout.addView(splashCustomImageEditText)
+    alertDialog {
+        title = "闪屏页相关配置"
+        customView = linearLayout
+        okButton {
+            updateOptionEntity()
+        }
+        negativeButton("返回") {
+            it.dismiss()
+        }
+        build()
+        show()
+    }
+}
 
 
 

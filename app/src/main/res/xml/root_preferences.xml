@@ -1,55 +1,15 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <PreferenceCategory app:title="@string/main_title">
-
-        <EditTextPreference
-            app:defaultValue="com.qidian.QDReader"
-            app:key="packageName"
-            app:title="@string/packageName"
-            app:useSimpleSummaryProvider="true" />
-
-
-    </PreferenceCategory>
-
-
-    <PreferenceCategory app:title="@string/function">
-
-        <SwitchPreferenceCompat
-            app:key="isEnableAutoSign"
-            app:title="@string/sw_autosignin" />
-
-        <SwitchPreferenceCompat
-            app:key="isEnableOldLayout"
-            app:title="@string/sw_old_layout" />
-
-        <SwitchPreferenceCompat
-            app:key="isEnableLocalCard"
-            app:title="@string/sw_local_card" />
-
-        <SwitchPreferenceCompat
-            app:key="isEnableHideBottomDot"
-            app:title="@string/sw_hide_bottom_dot" />
-
-        <SwitchPreferenceCompat
-            app:key="isEnableCloseQSNModeDialog"
-            app:title="@string/sw_close_qingshaonian_mode" />
-
-
-    </PreferenceCategory>
-
     <PreferenceCategory app:title="@string/other">
-
         <!--打开网页-->
         <Preference
             app:key="pref_app_source"
-            app:title="@string/open_source_address">
+            app:title="@string/github_open_source_address">
             <intent
                 android:action="android.intent.action.VIEW"
                 android:data="@string/url" />
         </Preference>
-
-
     </PreferenceCategory>
 
 
