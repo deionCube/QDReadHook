@@ -141,6 +141,12 @@
 
 * 我-隐藏控件(自选,开启后重启应用即可获取到列表)
 
+#### 效果图
+
+![我-隐藏控件](https://github.com/xihan123/QDReadHook/blob/master/Screenshots/我-隐藏控件.jpg?raw=true)
+
+---
+
 ## 截图
 
 ![image1](https://github.com/xihan123/QDReadHook/blob/master/Screenshots/1.jpg?raw=true)
