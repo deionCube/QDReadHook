@@ -86,12 +86,24 @@ class HookEntry : IYukiHookXposedInit {
                 removeBottomNavigationCenterAd(versionCode)
             }
 
+            if (optionEntity.advOption.enableRemoveAccountCenterAd) {
+                removeAccountCenterAd(versionCode)
+            }
+
             if (optionEntity.advOption.enableDisableCheckUpdate) {
                 removeUpdate(versionCode)
             }
 
             if (optionEntity.advOption.enableDisableAdv) {
                 disableAd(versionCode)
+            }
+
+            if (optionEntity.viewHideOption.enableHideMainBottomNavigationBarFind) {
+                hideBottomNavigationFind(versionCode)
+            }
+
+            if (optionEntity.viewHideOption.accountOption.enableHideAccount) {
+                accountViewHide(versionCode)
             }
 
             splashPage(
@@ -103,94 +115,6 @@ class HookEntry : IYukiHookXposedInit {
             if (optionList.isNotEmpty()) {
                 shieldOption(versionCode, optionList)
             }
-
-
-            /*
-
-            safeRun {
-                optionEntity?.let {
-                    if (it.mainOption.enableAutoSign) {
-                        autoSignIn(versionCode)
-                    }
-                    if (it.mainOption.enableOldLayout) {
-                        enableOldLayout(versionCode)
-                    }
-                    if (it.mainOption.enableLocalCard) {
-                        enableLocalCard(versionCode)
-                    }
-                    if (it.mainOption.enableHideBottomDot) {
-                        hideBottomRedDot(versionCode)
-                    }
-                    if (it.mainOption.enableDisableQSNModeDialog) {
-                        removeQSNYDialog(versionCode)
-                    }
-
-                    if (it.advOption.enableRemoveBookshelfFloat) {
-                        removeBookshelfFloatWindow(versionCode)
-                    }
-                    if (it.advOption.enableRemoveBookshelfBottomAd) {
-                        removeBottomNavigationCenterAd(versionCode)
-                    }
-                    if (it.advOption.enableDisableCheckUpdate) {
-                        removeUpdate(versionCode)
-                    }
-                    if (it.advOption.enableDisableAdv) {
-                        disableAd(versionCode)
-                    }
-
-                    if (it.splashOption.enableSplash) {
-                        if (it.splashOption.enableCustomSplash) {
-                            // TODO: 自定义闪屏页暂不支持
-                        }
-                    } else {
-                        disableSplash(versionCode)
-                    }
-                }
-            }
-
-            if (prefs.getBoolean("isEnableAutoSign")) {
-                autoSignIn(versionCode)
-            }
-
-            if (prefs.getBoolean("isEnableOldLayout")) {
-                enableOldLayout(versionCode)
-            }
-
-            if (prefs.getBoolean("isEnableLocalCard")) {
-                enableLocalCard(versionCode)
-            }
-
-            if (prefs.getBoolean("isEnableRemoveBookshelfFloat", BuildConfig.DEBUG)) {
-                removeBookshelfFloatWindow(versionCode)
-            }
-
-            if (prefs.getBoolean("isEnableRemoveBookshelfBottomAd", BuildConfig.DEBUG)) {
-                removeBottomNavigationCenterAd(versionCode)
-            }
-
-            if (prefs.getBoolean("isEnableDisableAd", BuildConfig.DEBUG)) {
-                disableAd(versionCode)
-            }
-
-            splashPage(versionCode)
-
-            if (prefs.getBoolean("isEnableHideBottomDot")) {
-                hideBottomRedDot(versionCode)
-            }
-
-            if (prefs.getBoolean("isEnableCloseQSNModeDialog")) {
-                removeQSNYDialog(versionCode)
-            }
-
-            if (prefs.getBoolean("isEnableRemoveUpdate", BuildConfig.DEBUG)) {
-                removeUpdate(versionCode)
-            }
-
-            if (optionList.isNotEmpty()) {
-                shieldOption(versionCode, optionList)
-            }
-
-             */
 
             /**
              * 开启OkHttp3 日志拦截器
@@ -285,19 +209,24 @@ class HookEntry : IYukiHookXposedInit {
                                         ) {
                                             showSplashOptionDialog()
                                         }
+                                        val viewHideOptionTextView = CustomTextView(
+                                            context = this, mText = "隐藏控件相关设置", isBold = true
+                                        ) {
+                                            showHideOptionDialog()
+                                        }
                                         val openSourceryOptionTextView = CustomTextView(
-                                            context = this,
-                                            mText = "开源地址及详细说明",
-                                            isBold = true
+                                            context = this, mText = "开源地址及详细说明", isBold = true
                                         ) {
                                             val intent = Intent(Intent.ACTION_VIEW)
-                                            intent.data = Uri.parse("https://github.com/xihan123/QDReadHook")
+                                            intent.data =
+                                                Uri.parse("https://github.com/xihan123/QDReadHook")
                                             startActivity(intent)
                                         }
                                         linearLayout.addView(mainOptionTextView)
                                         linearLayout.addView(advOptionTextView)
                                         linearLayout.addView(shieldOptionTextView)
                                         linearLayout.addView(splashOptionTextView)
+                                        linearLayout.addView(viewHideOptionTextView)
                                         linearLayout.addView(openSourceryOptionTextView)
 
                                         alertDialog {
@@ -382,9 +311,7 @@ class HookEntry : IYukiHookXposedInit {
          * @param bookType 书类型-可空
          */
         fun isNeedShield(
-            bookName: String?,
-            authorName: String?,
-            bookType: Set<String>?
+            bookName: String?, authorName: String?, bookType: Set<String>?
         ): Boolean {
             //loggerE(msg = "bookName: $bookName\nauthorName:$authorName\nbookType:$bookType")
             if (bookNameList.isNotEmpty()) {
@@ -575,7 +502,7 @@ fun PackageParam.autoSignIn(
  */
 fun PackageParam.oldAutoSignIn(versionCode: Int) {
     when (versionCode) {
-        in 758..788 -> {
+        in 758..792 -> {
             findClass("com.qidian.QDReader.ui.view.bookshelfview.CheckInReadingTimeView").hook {
                 injectMember {
                     method {
@@ -606,7 +533,7 @@ fun PackageParam.oldAutoSignIn(versionCode: Int) {
  */
 fun PackageParam.newAutoSignIn(versionCode: Int) {
     when (versionCode) {
-        in 758..788 -> {
+        in 758..792 -> {
             findClass("com.qidian.QDReader.ui.view.bookshelfview.CheckInReadingTimeViewNew").hook {
                 injectMember {
                     method {
@@ -774,6 +701,26 @@ fun PackageParam.removeBottomNavigationCenterAd(versionCode: Int) {
             }
         }
         else -> loggerE(msg = "移除底部导航栏中心广告不支持的版本号为: $versionCode")
+    }
+}
+
+/**
+ * 移除我-中心广告
+ */
+fun PackageParam.removeAccountCenterAd(versionCode: Int) {
+    when (versionCode) {
+        in 758..792 -> {
+            findClass("com.qidian.QDReader.ui.fragment.QDUserAccountFragment").hook {
+                injectMember {
+                    method {
+                        name = "loadADData"
+                        returnType = UnitType
+                    }
+                    intercept()
+                }
+            }
+        }
+        else -> loggerE(msg = "移除我-中心广告不支持的版本号为: $versionCode")
     }
 }
 
@@ -1017,7 +964,7 @@ fun PackageParam.removeQSNYDialog(versionCode: Int) {
     val dialogClassName: String? = when (versionCode) {
         in 758..768 -> "com.qidian.QDReader.bll.helper.v1"
         772 -> "com.qidian.QDReader.bll.helper.w1"
-        in 776..788 -> "com.qidian.QDReader.bll.helper.t1"
+        in 776..792 -> "com.qidian.QDReader.bll.helper.t1"
         else -> null
     }
     dialogClassName?.hook {
@@ -1035,9 +982,38 @@ fun PackageParam.removeQSNYDialog(versionCode: Int) {
  * 禁用检查更新
  */
 fun PackageParam.removeUpdate(versionCode: Int) {
-    when (versionCode) {
-        in 758..788 -> {
+    val neddHookClass = when (versionCode) {
+        in 758..788 -> "com.qidian.QDReader.util.z4"
+        792 -> "com.qidian.QDReader.util.i5"
+        else -> null
+    }
+    /**
+     * 上级调用:com.qidian.QDReader.ui.activity.MainGroupActivity.onCreate(android.os.Bundle)
+     */
+    neddHookClass?.hook {
+        injectMember {
+            method {
+                name = "b"
+                returnType = UnitType
+            }
+            intercept()
+        }
 
+        injectMember {
+            method {
+                name = "a"
+                returnType = UnitType
+            }
+            intercept()
+        }
+    }
+
+    when (versionCode) {
+        in 758..792 -> {
+
+            /**
+             * 上级调用:com.qidian.QDReader.ui.activity.MainGroupActivity.checkUpdate()
+             */
             findClass("w4.h").hook {
                 injectMember {
                     method {
@@ -1072,24 +1048,6 @@ fun PackageParam.removeUpdate(versionCode: Int) {
                 injectMember {
                     method {
                         name = "checkAppUpgrade"
-                        returnType = Unit
-                    }
-                    intercept()
-                }
-            }
-
-            findClass("com.qidian.QDReader.util.z4").hook {
-                injectMember {
-                    method {
-                        name = "b"
-                        returnType = UnitType
-                    }
-                    intercept()
-                }
-
-                injectMember {
-                    method {
-                        name = "a"
                         returnType = UnitType
                     }
                     intercept()
@@ -1125,8 +1083,6 @@ fun PackageParam.removeUpdate(versionCode: Int) {
 
 
             }
-
-
         }
         else -> loggerE(msg = "禁用检查更新不支持的版本号为: $versionCode")
     }
@@ -1161,7 +1117,7 @@ fun PackageParam.shieldOption(versionCode: Int, optionValueSet: Set<Int>) {
  */
 fun PackageParam.shieldDailyReading(versionCode: Int) {
     when (versionCode) {
-        788 -> {
+        in 788..792 -> {
             findClass("com.qidian.QDReader.component.api.b1").hook {
                 injectMember {
                     method {
@@ -1215,7 +1171,7 @@ fun PackageParam.shieldDailyReading(versionCode: Int) {
  */
 fun PackageParam.shieldChoice(versionCode: Int) {
     when (versionCode) {
-        788 -> {
+        in 788..792 -> {
             /**
              * 精选主页面
              */
@@ -1267,7 +1223,7 @@ fun PackageParam.shieldChoice(versionCode: Int) {
  */
 fun PackageParam.shieldCategory(versionCode: Int) {
     when (versionCode) {
-        788 -> {
+        in 788..792 -> {
             /**
              * 分类
              */
@@ -1318,63 +1274,64 @@ fun PackageParam.shieldCategory(versionCode: Int) {
 
 /**
  * 屏蔽免费-免费推荐
+ * 上级调用:com.qidian.QDReader.ui.adapter.a7.onBindContentItemViewHolder
  */
 fun PackageParam.shieldFreeRecommend(versionCode: Int) {
-    when (versionCode) {
-        788 -> {
-            /**
-             * 免费-免费推荐
-             */
-            findClass("la.a").hook {
-                injectMember {
-                    method {
-                        name = "n"
-                        param(
-                            "com.qidian.QDReader.repository.entity.BookStoreDynamicItem".clazz,
-                            IntType,
-                            IntType
-                        )
-                    }
-                    beforeHook {
-                        val item = args[0]?.let { getParam<ArrayList<*>>(it, "BookList") }
-                        item?.let {
-                            safeRun {
-                                val iterator = it.iterator()
-                                while (iterator.hasNext()) {
-                                    val item = iterator.next().toJSONString()
-                                    val jb = item.parseObject()
-                                    val authorName = jb.getString("AuthorName")
-                                    val bookName = jb.getString("BookName")
-                                    val categoryName = jb.getString("CategoryName")
-                                    val subCategoryName = jb.getString("SubCategoryName")
-                                    val array = jb.getJSONArray("tagList")
-                                    val bookTypeArray = mutableSetOf<String>()
-                                    categoryName?.let { bookTypeArray += categoryName }
-                                    subCategoryName?.let { bookTypeArray += subCategoryName }
-                                    array?.let { it1 ->
-                                        it1.forEach { it2 ->
-                                            bookTypeArray += it2.toString()
-                                        }
-                                    }
-                                    val isNeedShield = isNeedShield(
-                                        bookName = bookName,
-                                        authorName = authorName,
-                                        bookType = bookTypeArray
-                                    )
-                                    if (isNeedShield) {
-                                        iterator.remove()
-                                    }
+    val freeRecommendHookClass: String? = when (versionCode) {
+        788 -> "la.a"
+        792 -> "ka.a"
+        else -> null
+    }
+    /**
+     * 免费-免费推荐
+     */
+    freeRecommendHookClass?.hook {
+        injectMember {
+            method {
+                name = "n"
+                param(
+                    "com.qidian.QDReader.repository.entity.BookStoreDynamicItem".clazz,
+                    IntType,
+                    IntType
+                )
+            }
+            beforeHook {
+                val item = args[0]?.let { getParam<ArrayList<*>>(it, "BookList") }
+                item?.let {
+                    safeRun {
+                        val iterator = it.iterator()
+                        while (iterator.hasNext()) {
+                            val item = iterator.next().toJSONString()
+                            val jb = item.parseObject()
+                            val authorName = jb.getString("AuthorName")
+                            val bookName = jb.getString("BookName")
+                            val categoryName = jb.getString("CategoryName")
+                            val subCategoryName = jb.getString("SubCategoryName")
+                            val array = jb.getJSONArray("tagList")
+                            val bookTypeArray = mutableSetOf<String>()
+                            categoryName?.let { bookTypeArray += categoryName }
+                            subCategoryName?.let { bookTypeArray += subCategoryName }
+                            array?.let { it1 ->
+                                it1.forEach { it2 ->
+                                    bookTypeArray += it2.toString()
                                 }
                             }
+                            val isNeedShield = isNeedShield(
+                                bookName = bookName,
+                                authorName = authorName,
+                                bookType = bookTypeArray
+                            )
+                            if (isNeedShield) {
+                                iterator.remove()
+                            }
                         }
-
                     }
-
                 }
+
             }
+
         }
-        else -> loggerE(msg = "屏蔽免费-免费推荐不支持的版本号: $versionCode")
-    }
+    } ?: loggerE(msg = "屏蔽免费-免费推荐不支持的版本号: $versionCode")
 }
 
 /**
@@ -1382,7 +1339,7 @@ fun PackageParam.shieldFreeRecommend(versionCode: Int) {
  */
 fun PackageParam.shieldFreeNewBook(versionCode: Int) {
     when (versionCode) {
-        788 -> {
+        in 788..792 -> {
             /**
              * 免费-新书入库
              */
@@ -1458,10 +1415,11 @@ fun PackageParam.shieldFreeNewBook(versionCode: Int) {
 
 /**
  * 屏蔽畅销精选、主编力荐等更多
+ * 上级调用:com.qidian.QDReader.ui.view.BookItemView.k0() 在刷新前修改List数据
  */
 fun PackageParam.shieldHotAndRecommend(versionCode: Int) {
     when (versionCode) {
-        788 -> {
+        in 788..792 -> {
             /**
              * 畅销精选、主编力荐等更多
              */
@@ -1521,7 +1479,7 @@ fun PackageParam.shieldHotAndRecommend(versionCode: Int) {
  */
 fun PackageParam.shieldNewBookAndRecommend(versionCode: Int) {
     when (versionCode) {
-        788 -> {
+        in 788..792 -> {
             /**
              * 新书强推、三江推荐
              */
@@ -1578,7 +1536,7 @@ fun PackageParam.shieldNewBookAndRecommend(versionCode: Int) {
  */
 fun PackageParam.shieldCategoryAllBook(versionCode: Int) {
     when (versionCode) {
-        788 -> {
+        in 788..792 -> {
             /**
              * 分类-全部作品
              */
@@ -1626,7 +1584,7 @@ fun PackageParam.shieldCategoryAllBook(versionCode: Int) {
  */
 fun PackageParam.shieldSearchFind(versionCode: Int) {
     when (versionCode) {
-        788 -> {
+        in 788..792 -> {
             /**
              * 搜索发现(热词)
              */
@@ -1658,45 +1616,53 @@ fun PackageParam.shieldSearchFind(versionCode: Int) {
 fun PackageParam.shieldSearch(
     versionCode: Int, isNeedShieldBookRank: Boolean, isNeedShieldTagRank: Boolean
 ) {
-    when (versionCode) {
-        788 -> {
-            if (isNeedShieldBookRank) {
-                /**
-                 * 屏蔽热搜作品榜更多
-                 */
-                findClass("o9.d").hook {
-                    injectMember {
-                        method {
-                            name = "o"
-                        }
-                        beforeHook {
-                            val list = args[0] as? MutableList<*>
-                            list?.let {
-                                safeRun {
-                                    val iterator = it.iterator()
-                                    while (iterator.hasNext()) {
-                                        val item = iterator.next().toJSONString()
-                                        val jb = item.parseObject()
-                                        val authorName = jb.getString("AuthorName")
-                                        val bookName = jb.getString("BookName")
-                                        val categoryName = jb.getString("BookCategory")
-                                        val isNeedShield = isNeedShield(
-                                            bookName = bookName,
-                                            authorName = authorName,
-                                            bookType = setOf(categoryName)
-                                        )
-                                        if (isNeedShield) {
-                                            iterator.remove()
-                                        }
-
-                                    }
+    if (isNeedShieldBookRank) {
+        /**
+         * 上级调用: com.qidian.QDReader.ui.activity.QDSearchListActivity.bindView()
+         */
+        val needHookClass: String? = when (versionCode) {
+            788 -> "o9.d"
+            792 -> "n9.d"
+            else -> null
+        }
+        /**
+         * 屏蔽热门作品榜更多
+         */
+        needHookClass?.hook {
+            injectMember {
+                method {
+                    name = "o"
+                }
+                beforeHook {
+                    val list = args[0] as? MutableList<*>
+                    list?.let {
+                        safeRun {
+                            val iterator = it.iterator()
+                            while (iterator.hasNext()) {
+                                val item = iterator.next().toJSONString()
+                                val jb = item.parseObject()
+                                val authorName = jb.getString("AuthorName")
+                                val bookName = jb.getString("BookName")
+                                val categoryName = jb.getString("BookCategory")
+                                val isNeedShield = isNeedShield(
+                                    bookName = bookName,
+                                    authorName = authorName,
+                                    bookType = setOf(categoryName)
+                                )
+                                if (isNeedShield) {
+                                    iterator.remove()
                                 }
-                                args(0).set(it)
+
                             }
                         }
+                        args(0).set(it)
                     }
                 }
             }
+        } ?: loggerE(msg = "屏蔽热门作品榜更多不支持的版本号: $versionCode")
+    }
+    when (versionCode) {
+        in 788..792 -> {
             findClass("com.qidian.QDReader.ui.view.search.SearchHomePageRankView").hook {
                 if (isNeedShieldBookRank) {
                     /**
@@ -1778,7 +1744,7 @@ fun PackageParam.shieldSearch(
  */
 fun PackageParam.shieldSearchRecommend(versionCode: Int) {
     when (versionCode) {
-        788 -> {
+        in 788..792 -> {
             /**
              * 搜索-为你推荐
              */
@@ -1800,11 +1766,93 @@ fun PackageParam.shieldSearchRecommend(versionCode: Int) {
 }
 
 /**
+ * 隐藏底部导航栏-发现
+ */
+fun PackageParam.hideBottomNavigationFind(versionCode: Int) {
+    when (versionCode) {
+        792 -> {
+            findClass("com.qidian.QDReader.ui.widget.maintab.PagerSlidingTabStrip").hook {
+                injectMember {
+                    method {
+                        name = "s"
+                        emptyParam()
+                        returnType = UnitType
+                    }
+                    afterHook {
+                        val i = getView<LinearLayout>(instance, "i")
+                        i?.let {
+                            val viewSize = it.childCount
+                            val view = it.getChildAt(2)
+                            view?.visibility = View.GONE
+                        }
+                    }
+                }
+            }
+        }
+        else -> loggerE(msg = "隐藏底部导航栏-发现不支持的版本号: $versionCode")
+    }
+}
+
+/**
+ * 我-隐藏控件
+ */
+fun PackageParam.accountViewHide(versionCode: Int) {
+    when (versionCode) {
+        792 -> {
+            /**
+             * 我-隐藏控件
+             */
+            findClass("com.qidian.QDReader.ui.fragment.QDUserAccountFragment").hook {
+                injectMember {
+                    method {
+                        name = "lambda\$loadData\$3"
+                        param("com.qidian.QDReader.repository.entity.UserAccountDataBean".clazz)
+                        returnType = UnitType
+                    }
+                    beforeHook {
+                        args[0]?.let {
+                            val items = getParam<MutableList<*>>(it, "Items")
+                            items?.let { list ->
+                                safeRun {
+                                    val iterator = list.iterator()
+                                    while (iterator.hasNext()) {
+                                        val item = iterator.next() as? MutableList<*>
+                                        item?.let { list2 ->
+                                            val iterator2 = list2.iterator()
+                                            while (iterator2.hasNext()) {
+                                                val item2 = iterator2.next().toJSONString()
+                                                val jb = item2.parseObject()
+                                                if (jb != null) {
+                                                    val showName = jb.getString("showName")
+                                                    optionEntity.viewHideOption.accountOption.configurationsOptionList += showName
+                                                    if (optionEntity.viewHideOption.accountOption.enableHideAccount && optionEntity.viewHideOption.accountOption.configurationsSelectedOptionList.isNotEmpty()) {
+                                                        if (showName in optionEntity.viewHideOption.accountOption.configurationsSelectedOptionList) {
+                                                            iterator2.remove()
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+            }
+        }
+        else -> loggerE(msg = "我-隐藏控件不支持的版本号: $versionCode")
+    }
+}
+
+/**
  * 配置模型
  * @param mainOption 主配置
  * @param advOption 广告配置
  * @param shieldOption 屏蔽配置
  * @param splashOption 启动配置
+ * @param viewHideOption 控件隐藏配置
  */
 @Keep
 @Serializable
@@ -1812,20 +1860,23 @@ data class OptionEntity(
     @SerialName("advOption") var advOption: AdvOption = AdvOption(),
     @SerialName("mainOption") var mainOption: MainOption = MainOption(),
     @SerialName("shieldOption") var shieldOption: ShieldOption = ShieldOption(),
-    @SerialName("splashOption") var splashOption: SplashOption = SplashOption()
+    @SerialName("splashOption") var splashOption: SplashOption = SplashOption(),
+    @SerialName("viewHideOption") var viewHideOption: ViewHideOption = ViewHideOption()
 ) {
     /**
      * 广告配置
-     * @param enableRemoveBookshelfFloat 是否开启移除书架浮窗
-     * @param enableRemoveBookshelfBottomAd 是否开启移除书架底部导航栏广告
-     * @param enableDisableCheckUpdate 是否开启禁止检查更新
-     * @param enableDisableAdv 是否开启禁止广告
+     * @param enableRemoveBookshelfFloat 开启移除书架浮窗
+     * @param enableRemoveBookshelfBottomAd 开启移除书架底部导航栏广告
+     * @param enableRemoveAccountCenterAd 开启移除我-中间广告
+     * @param enableDisableCheckUpdate 开启禁止检查更新
+     * @param enableDisableAdv 开启禁止广告
      */
     @Keep
     @Serializable
     data class AdvOption(
         @SerialName("enableDisableAdv") var enableDisableAdv: Boolean = false,
         @SerialName("enableDisableCheckUpdate") var enableDisableCheckUpdate: Boolean = false,
+        @SerialName("enableRemoveAccountCenterAd") var enableRemoveAccountCenterAd: Boolean = false,
         @SerialName("enableRemoveBookshelfBottomAd") var enableRemoveBookshelfBottomAd: Boolean = false,
         @SerialName("enableRemoveBookshelfFloat") var enableRemoveBookshelfFloat: Boolean = false
     )
@@ -1887,6 +1938,34 @@ data class OptionEntity(
         @SerialName("enableCustomSplashAllButton") var enableCustomSplashAllButton: Boolean = false,
         @SerialName("enableSplash") var enableSplash: Boolean = false
     )
+
+    /**
+     * 控件隐藏配置
+     *      * @param enableHideMainBottomNavigationBarFind 开启隐藏主页底部导航栏发现
+     * @param auccountOption 用户页面配置
+     */
+    @Keep
+    @Serializable
+    data class ViewHideOption(
+        @SerialName("enableHideMainBottomNavigationBarFind") var enableHideMainBottomNavigationBarFind: Boolean = false,
+        @SerialName("AccountOption") var accountOption: AccountOption = AccountOption()
+    ) {
+
+        /**
+         * 用户页面配置
+         * @param enableHideAccount 是否开启隐藏用户页面
+         * @param configurationsOptionList 可用配置集合
+         * @param configurationsSelectedOptionList 已选配置集合
+         */
+        @Keep
+        @Serializable
+        data class AccountOption(
+            @SerialName("enableHideAccount") var enableHideAccount: Boolean = false,
+            @SerialName("configurationsOptionList") var configurationsOptionList: MutableSet<String> = mutableSetOf(),
+            @SerialName("configurationsSelectedOptionList") var configurationsSelectedOptionList: MutableSet<String> = mutableSetOf()
+        )
+
+    }
 }
 
 /**
@@ -1954,6 +2033,7 @@ fun defaultOptionEntity(): OptionEntity = OptionEntity(
     ), advOption = OptionEntity.AdvOption(
         enableRemoveBookshelfFloat = true,
         enableRemoveBookshelfBottomAd = true,
+        enableRemoveAccountCenterAd = true,
         enableDisableCheckUpdate = true,
         enableDisableAdv = true
     ), shieldOption = OptionEntity.ShieldOption(
@@ -1968,6 +2048,14 @@ fun defaultOptionEntity(): OptionEntity = OptionEntity(
         customBookId = "",
         customSplashType = 0,
         customSplashImageFilePath = ""
+    ),
+    viewHideOption = OptionEntity.ViewHideOption(
+        enableHideMainBottomNavigationBarFind = false,
+        accountOption = OptionEntity.ViewHideOption.AccountOption(
+            enableHideAccount = true,
+            configurationsOptionList = mutableSetOf(),
+            configurationsSelectedOptionList = mutableSetOf()
+        )
     )
 )
 
@@ -2070,6 +2158,13 @@ fun Context.showAdvOptionDialog() {
     ) {
         optionEntity.advOption.enableRemoveBookshelfBottomAd = it
     }
+    val enableRemoveAccountCenterAdOption = CustomSwitch(
+        context = this,
+        title = "移除账号中心广告",
+        isEnable = optionEntity.advOption.enableRemoveAccountCenterAd
+    ) {
+        optionEntity.advOption.enableRemoveAccountCenterAd = it
+    }
     val enableDisableCheckUpdateOption = CustomSwitch(
         context = this, title = "禁用检查更新", isEnable = optionEntity.advOption.enableDisableCheckUpdate
     ) {
@@ -2082,6 +2177,7 @@ fun Context.showAdvOptionDialog() {
     }
     linearLayout.addView(enableRemoveBookshelfFloatOption)
     linearLayout.addView(enableRemoveBookshelfBottomAdOption)
+    linearLayout.addView(enableRemoveAccountCenterAdOption)
     linearLayout.addView(enableDisableCheckUpdateOption)
     linearLayout.addView(enableDisableAdvOption)
     alertDialog {
@@ -2200,9 +2296,7 @@ fun Context.showShieldOptionDialog() {
 fun Context.showSplashOptionDialog() {
     val linearLayout = CustomLinearLayout(this, isAutoWidth = false)
     val enableSplashOptionSwitch = CustomSwitch(
-        context = this,
-        title = "启用闪屏页",
-        isEnable = optionEntity.splashOption.enableSplash
+        context = this, title = "启用闪屏页", isEnable = optionEntity.splashOption.enableSplash
     ) {
         optionEntity.splashOption.enableSplash = it
     }
@@ -2269,6 +2363,72 @@ fun Context.showSplashOptionDialog() {
     }
 }
 
+/**
+ * 我-隐藏控件配置
+ */
+fun Context.showHideOptionDialog() {
+    val linearLayout = CustomLinearLayout(this, isAutoWidth = false)
+    val mainBottomNavigationBarFindOptionSwitch = CustomSwitch(
+        context = this,
+        title = "隐藏底部导航栏-发现",
+        isEnable = optionEntity.viewHideOption.enableHideMainBottomNavigationBarFind
+    ) {
+        optionEntity.viewHideOption.enableHideMainBottomNavigationBarFind = it
+    }
+    val accountViewHideOptionSwitch = CustomSwitch(
+        context = this,
+        title = "启用我-隐藏控件",
+        isEnable = optionEntity.viewHideOption.accountOption.enableHideAccount
+    ) {
+        optionEntity.viewHideOption.accountOption.enableHideAccount = it
+    }
+    val customTextView = CustomTextView(
+        context = this,
+        mText = "我-屏蔽控件列表",
+        isBold = true
+    ) {
+        val shieldOptionList =
+            optionEntity.viewHideOption.accountOption.configurationsOptionList.toList()
+        val checkedItems = BooleanArray(shieldOptionList.size)
+        if (optionEntity.viewHideOption.accountOption.configurationsSelectedOptionList.isNotEmpty()) {
+            safeRun {
+                shieldOptionList.forEachIndexed { index, _ ->
+                    // 对比 shieldOptionList 和 optionEntity.viewHideOption.accountOption.configurationsSelectedOptionList 有相同的元素就设置为true
+                    if (optionEntity.viewHideOption.accountOption.configurationsSelectedOptionList.any { it == shieldOptionList[index] }) {
+                        checkedItems[index] = true
+                    }
 
+                }
+            }
+        }
+        multiChoiceSelector(shieldOptionList, checkedItems, "屏蔽选项列表") { _, i, isChecked ->
+            checkedItems[i] = isChecked
+        }.doOnDismiss {
+            checkedItems.forEachIndexed { index, b ->
+                if (b) {
+                    optionEntity.viewHideOption.accountOption.configurationsSelectedOptionList += shieldOptionList[index]
+                } else {
+                    optionEntity.viewHideOption.accountOption.configurationsSelectedOptionList -= shieldOptionList[index]
+                }
+            }
+        }
+    }
+    linearLayout.addView(mainBottomNavigationBarFindOptionSwitch)
+    linearLayout.addView(accountViewHideOptionSwitch)
+    linearLayout.addView(customTextView)
+
+    alertDialog {
+        title = "隐藏控件配置"
+        customView = linearLayout
+        okButton {
+            updateOptionEntity()
+        }
+        negativeButton("返回") {
+            it.dismiss()
+        }
+        build()
+        show()
+    }
+}
 
 
