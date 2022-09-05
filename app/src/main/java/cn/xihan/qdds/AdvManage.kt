@@ -37,7 +37,7 @@ fun PackageParam.removeBottomNavigationCenterAd(versionCode: Int) {
  */
 fun PackageParam.removeAccountCenterAd(versionCode: Int) {
     when (versionCode) {
-        in 758..792 -> {
+        in 758..796 -> {
             findClass("com.qidian.QDReader.ui.fragment.QDUserAccountFragment").hook {
                 injectMember {
                     method {

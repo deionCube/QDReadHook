@@ -22,7 +22,7 @@ import com.highcapable.yukihookapi.hook.type.java.UnitType
  */
 fun PackageParam.hideSearchAllView(versionCode: Int) {
     when (versionCode) {
-        in 788..792 -> {
+        in 788..796 -> {
             /**
              * 搜索页面一刀切
              */
@@ -151,7 +151,7 @@ fun PackageParam.hideBottomRedDot(versionCode: Int) {
  */
 fun PackageParam.hideBottomNavigationFind(versionCode: Int) {
     when (versionCode) {
-        792 -> {
+        in 792..796 -> {
             findClass("com.qidian.QDReader.ui.widget.maintab.PagerSlidingTabStrip").hook {
                 injectMember {
                     method {
@@ -162,7 +162,6 @@ fun PackageParam.hideBottomNavigationFind(versionCode: Int) {
                     afterHook {
                         val i = getView<LinearLayout>(instance, "i")
                         i?.let {
-                            val viewSize = it.childCount
                             val view = it.getChildAt(2)
                             view?.visibility = View.GONE
                         }
@@ -179,7 +178,7 @@ fun PackageParam.hideBottomNavigationFind(versionCode: Int) {
  */
 fun PackageParam.accountViewHide(versionCode: Int) {
     when (versionCode) {
-        792 -> {
+        in 792..796 -> {
             /**
              * 我-隐藏控件
              */

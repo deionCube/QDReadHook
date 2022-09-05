@@ -438,7 +438,7 @@ fun PackageParam.autoSignIn(
  */
 fun PackageParam.oldAutoSignIn(versionCode: Int) {
     when (versionCode) {
-        in 758..792 -> {
+        in 758..796 -> {
             findClass("com.qidian.QDReader.ui.view.bookshelfview.CheckInReadingTimeView").hook {
                 injectMember {
                     method {
@@ -469,7 +469,7 @@ fun PackageParam.oldAutoSignIn(versionCode: Int) {
  */
 fun PackageParam.newAutoSignIn(versionCode: Int) {
     when (versionCode) {
-        in 758..792 -> {
+        in 758..796 -> {
             findClass("com.qidian.QDReader.ui.view.bookshelfview.CheckInReadingTimeViewNew").hook {
                 injectMember {
                     method {
@@ -575,7 +575,7 @@ fun PackageParam.removeQSNYDialog(versionCode: Int) {
     val dialogClassName: String? = when (versionCode) {
         in 758..768 -> "com.qidian.QDReader.bll.helper.v1"
         772 -> "com.qidian.QDReader.bll.helper.w1"
-        in 776..792 -> "com.qidian.QDReader.bll.helper.t1"
+        in 776..796 -> "com.qidian.QDReader.bll.helper.t1"
         else -> null
     }
     dialogClassName?.hook {
@@ -595,7 +595,7 @@ fun PackageParam.removeQSNYDialog(versionCode: Int) {
 fun PackageParam.removeUpdate(versionCode: Int) {
     val neddHookClass = when (versionCode) {
         in 758..788 -> "com.qidian.QDReader.util.z4"
-        792 -> "com.qidian.QDReader.util.i5"
+        in 792..796 -> "com.qidian.QDReader.util.i5"
         else -> null
     }
     /**
@@ -620,7 +620,7 @@ fun PackageParam.removeUpdate(versionCode: Int) {
     }
 
     when (versionCode) {
-        in 758..792 -> {
+        in 758..796 -> {
 
             /**
              * 上级调用:com.qidian.QDReader.ui.activity.MainGroupActivity.checkUpdate()
