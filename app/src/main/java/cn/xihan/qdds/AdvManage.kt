@@ -17,19 +17,19 @@ import com.highcapable.yukihookapi.hook.type.java.UnitType
  * 上级调用位置:com.qidian.QDReader.ui.activity.MainGroupActivity.checkAdTab()
  */
 fun PackageParam.removeBottomNavigationCenterAd(versionCode: Int) {
-    when (versionCode) {
-        in 758..800 -> {
-            findClass("com.qidian.QDReader.ui.activity.MainGroupActivity\$t").hook {
-                injectMember {
-                    method {
-                        name = "c"
-                    }
-                    intercept()
-                }
-            }
-        }
-        else -> loggerE(msg = "移除底部导航栏中心广告不支持的版本号为: $versionCode")
+    val hookClassName = when (versionCode) {
+        in 758..796 -> "com.qidian.QDReader.ui.activity.MainGroupActivity\$t"
+        in 800..850 -> "com.qidian.QDReader.ui.activity.MainGroupActivity\$a"
+        else -> null
     }
+    hookClassName?.hook {
+        injectMember {
+            method {
+                name = "c"
+            }
+            intercept()
+        }
+    } ?: loggerE(msg = "移除底部导航栏中心广告不支持的版本号为: $versionCode")
 }
 
 /**
@@ -37,7 +37,7 @@ fun PackageParam.removeBottomNavigationCenterAd(versionCode: Int) {
  */
 fun PackageParam.removeAccountCenterAd(versionCode: Int) {
     when (versionCode) {
-        in 758..796 -> {
+        in 758..850 -> {
             findClass("com.qidian.QDReader.ui.fragment.QDUserAccountFragment").hook {
                 injectMember {
                     method {
@@ -57,7 +57,7 @@ fun PackageParam.removeAccountCenterAd(versionCode: Int) {
  */
 fun PackageParam.disableAd(versionCode: Int) {
     when (versionCode) {
-        in 758..800 -> {
+        in 758..850 -> {
             findClass("com.qq.e.comm.constants.CustomPkgConstants").hook {
                 injectMember {
                     method {
@@ -140,12 +140,16 @@ fun Context.showAdvOptionDialog() {
         HookEntry.optionEntity.advOption.enableRemoveAccountCenterAd = it
     }
     val enableDisableCheckUpdateOption = CustomSwitch(
-        context = this, title = "禁用检查更新", isEnable = HookEntry.optionEntity.advOption.enableDisableCheckUpdate
+        context = this,
+        title = "禁用检查更新",
+        isEnable = HookEntry.optionEntity.advOption.enableDisableCheckUpdate
     ) {
         HookEntry.optionEntity.advOption.enableDisableCheckUpdate = it
     }
     val enableDisableAdvOption = CustomSwitch(
-        context = this, title = "禁用TX广告", isEnable = HookEntry.optionEntity.advOption.enableDisableAdv
+        context = this,
+        title = "禁用TX广告",
+        isEnable = HookEntry.optionEntity.advOption.enableDisableAdv
     ) {
         HookEntry.optionEntity.advOption.enableDisableAdv = it
     }

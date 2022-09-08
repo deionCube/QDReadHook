@@ -9,9 +9,11 @@ import android.widget.RelativeLayout
 import com.highcapable.yukihookapi.hook.factory.current
 import com.highcapable.yukihookapi.hook.log.loggerE
 import com.highcapable.yukihookapi.hook.param.PackageParam
+import com.highcapable.yukihookapi.hook.type.android.BundleClass
 import com.highcapable.yukihookapi.hook.type.java.IntType
 import com.highcapable.yukihookapi.hook.type.java.LongType
 import com.highcapable.yukihookapi.hook.type.java.StringType
+import com.highcapable.yukihookapi.hook.type.java.UnitType
 
 /**
  * @项目名 : QDReadHook
@@ -89,6 +91,8 @@ fun PackageParam.enableCustomSplash(
                     injectMember {
                         method {
                             name = "onCreate"
+                            param(BundleClass)
+                            returnType = UnitType
                         }
                         afterHook {
                             val btnSkip = getView<Button>(instance, "btnSkip")

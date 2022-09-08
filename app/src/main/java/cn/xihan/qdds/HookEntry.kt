@@ -12,7 +12,6 @@ import com.highcapable.yukihookapi.YukiHookAPI
 import com.highcapable.yukihookapi.annotation.xposed.InjectYukiHookWithXposed
 import com.highcapable.yukihookapi.hook.log.loggerE
 import com.highcapable.yukihookapi.hook.param.PackageParam
-import com.highcapable.yukihookapi.hook.type.android.ActivityClass
 import com.highcapable.yukihookapi.hook.type.java.*
 import com.highcapable.yukihookapi.hook.xposed.proxy.IYukiHookXposedInit
 import de.robv.android.xposed.XposedHelpers.*
@@ -217,7 +216,7 @@ class HookEntry : IYukiHookXposedInit {
                                         linearLayout.addView(openSourceryOptionTextView)
 
                                         alertDialog {
-                                            title = "模块设置"
+                                            title = "模块版本: ${BuildConfig.VERSION_NAME}"
                                             customView = linearLayout
 
                                             positiveButton("确定并重启起点") {
@@ -438,7 +437,7 @@ fun PackageParam.autoSignIn(
  */
 fun PackageParam.oldAutoSignIn(versionCode: Int) {
     when (versionCode) {
-        in 758..796 -> {
+        in 758..800 -> {
             findClass("com.qidian.QDReader.ui.view.bookshelfview.CheckInReadingTimeView").hook {
                 injectMember {
                     method {
@@ -469,7 +468,7 @@ fun PackageParam.oldAutoSignIn(versionCode: Int) {
  */
 fun PackageParam.newAutoSignIn(versionCode: Int) {
     when (versionCode) {
-        in 758..796 -> {
+        in 758..800 -> {
             findClass("com.qidian.QDReader.ui.view.bookshelfview.CheckInReadingTimeViewNew").hook {
                 injectMember {
                     method {
@@ -505,7 +504,7 @@ fun PackageParam.newAutoSignIn(versionCode: Int) {
  */
 fun PackageParam.enableOldLayout(versionCode: Int) {
     when (versionCode) {
-        in 758..800 -> {
+        in 758..850 -> {
             findClass("com.qidian.QDReader.component.config.QDAppConfigHelper\$Companion").hook {
                 injectMember {
                     method {
@@ -524,7 +523,7 @@ fun PackageParam.enableOldLayout(versionCode: Int) {
  */
 fun PackageParam.enableLocalCard(versionCode: Int) {
     when (versionCode) {
-        in 758..800 -> {
+        in 758..850 -> {
 
             findClass("com.qidian.QDReader.repository.entity.UserAccountDataBean\$MemberBean").hook {
                 injectMember {
@@ -550,32 +549,29 @@ fun PackageParam.enableLocalCard(versionCode: Int) {
  * 移除青少年模式弹框
  */
 fun PackageParam.removeQSNYDialog(versionCode: Int) {
-    findClass("com.qidian.QDReader.bll.manager.QDTeenagerManager").hook {
-        injectMember {
-            method {
-                name = "isTeenLimitShouldShow"
-                param(IntType)
-                returnType = BooleanType
+    when (versionCode) {
+        in 758..850 -> {
+            findClass("com.qidian.QDReader.bll.helper.g1").hook {
+                injectMember {
+                    method {
+                        name = "run"
+                        returnType = UnitType
+                    }
+                    intercept()
+                }
             }
-            replaceToFalse()
         }
-
-        injectMember {
-            method {
-                name = "judgeTeenUserTimeLimit\$lambda-3\$lambda-2"
-                param(ActivityClass)
-                returnType = UnitType
-            }
-            intercept()
-        }
+        else -> loggerE(msg = "移除青少年模式弹框不支持的版本号为: $versionCode")
     }
+
+/*
     /**
      * 上级调用位置:com.qidian.QDReader.bll.manager.QDTeenagerManager.teenWorkDialog
      */
     val dialogClassName: String? = when (versionCode) {
         in 758..768 -> "com.qidian.QDReader.bll.helper.v1"
         772 -> "com.qidian.QDReader.bll.helper.w1"
-        in 776..796 -> "com.qidian.QDReader.bll.helper.t1"
+        in 776..800 -> "com.qidian.QDReader.bll.helper.t1"
         else -> null
     }
     dialogClassName?.hook {
@@ -584,23 +580,31 @@ fun PackageParam.removeQSNYDialog(versionCode: Int) {
                 name = "show"
                 superClass()
             }
-            intercept()
+            beforeHook {
+                printCallStack(instance.javaClass.name)
+            }
+            //intercept()
         }
     } ?: loggerE(msg = "移除青少年模式弹框不支持的版本号为: $versionCode")
+
+ */
+
 }
 
 /**
  * 禁用检查更新
+ * 上级调用:com.qidian.QDReader.ui.activity.MainGroupActivity.onCreate(android.os.Bundle)
  */
 fun PackageParam.removeUpdate(versionCode: Int) {
+    /**
+     * 也可全局搜索 "UpgradeCommon"、"checkUpdate:"
+     */
     val neddHookClass = when (versionCode) {
         in 758..788 -> "com.qidian.QDReader.util.z4"
         in 792..796 -> "com.qidian.QDReader.util.i5"
+        800 -> "com.qidian.QDReader.util.l5"
         else -> null
     }
-    /**
-     * 上级调用:com.qidian.QDReader.ui.activity.MainGroupActivity.onCreate(android.os.Bundle)
-     */
     neddHookClass?.hook {
         injectMember {
             method {
@@ -620,7 +624,7 @@ fun PackageParam.removeUpdate(versionCode: Int) {
     }
 
     when (versionCode) {
-        in 758..796 -> {
+        in 758..800 -> {
 
             /**
              * 上级调用:com.qidian.QDReader.ui.activity.MainGroupActivity.checkUpdate()

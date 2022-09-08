@@ -22,7 +22,7 @@ import com.highcapable.yukihookapi.hook.type.java.UnitType
  */
 fun PackageParam.hideSearchAllView(versionCode: Int) {
     when (versionCode) {
-        in 788..796 -> {
+        in 788..800 -> {
             /**
              * 搜索页面一刀切
              */
@@ -77,7 +77,7 @@ fun PackageParam.removeBookshelfFloatWindow(versionCode: Int) {
                 }
             }
         }
-        in 772..800 -> {
+        in 772..850 -> {
             findClass("com.qidian.QDReader.ui.fragment.QDBookShelfPagerFragment").hook {
                 injectMember {
                     method {
@@ -131,7 +131,7 @@ fun PackageParam.hideBottomRedDot(versionCode: Int) {
                 }
             }
         }
-        in 772..800 -> {
+        in 772..850 -> {
             findClass("com.qidian.QDReader.ui.widget.maintab.e").hook {
                 injectMember {
                     method {
@@ -151,7 +151,7 @@ fun PackageParam.hideBottomRedDot(versionCode: Int) {
  */
 fun PackageParam.hideBottomNavigationFind(versionCode: Int) {
     when (versionCode) {
-        in 792..796 -> {
+        in 792..850 -> {
             findClass("com.qidian.QDReader.ui.widget.maintab.PagerSlidingTabStrip").hook {
                 injectMember {
                     method {
@@ -178,7 +178,7 @@ fun PackageParam.hideBottomNavigationFind(versionCode: Int) {
  */
 fun PackageParam.accountViewHide(versionCode: Int) {
     when (versionCode) {
-        in 792..796 -> {
+        in 792..800 -> {
             /**
              * 我-隐藏控件
              */
@@ -219,7 +219,6 @@ fun PackageParam.accountViewHide(versionCode: Int) {
                         }
                     }
                 }
-
             }
         }
         else -> loggerE(msg = "我-隐藏控件不支持的版本号: $versionCode")

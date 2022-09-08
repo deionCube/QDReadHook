@@ -54,7 +54,7 @@ fun PackageParam.shieldDailyReading(
     versionCode: Int
 ) {
     when (versionCode) {
-        in 788..796 -> {
+        in 788..850 -> {
             findClass("com.qidian.QDReader.component.api.b1").hook {
                 injectMember {
                     method {
@@ -83,7 +83,7 @@ fun PackageParam.shieldDailyReading(
  */
 fun PackageParam.shieldChoice(versionCode: Int) {
     when (versionCode) {
-        in 788..796 -> {
+        in 788..800 -> {
             /**
              * 精选主页面
              */
@@ -113,7 +113,7 @@ fun PackageParam.shieldChoice(versionCode: Int) {
  */
 fun PackageParam.shieldCategory(versionCode: Int) {
     when (versionCode) {
-        in 788..796 -> {
+        in 788..800 -> {
             /**
              * 分类
              * 上级调用:com.qidian.QDReader.ui.adapter.x6.onBindContentItemViewHolder if(v1 == 2)
@@ -145,18 +145,15 @@ fun PackageParam.shieldCategory(versionCode: Int) {
 
 /**
  * 屏蔽精选-免费-免费推荐
- * 上级调用:com.qidian.QDReader.ui.adapter.a7.onBindContentItemViewHolder
+ * 上级调用:com.qidian.QDReader.ui.fragment.QDBookStoreFragment.onViewInject mAdapter
  * if(this.getContentItemViewType(arg8) != 8)
  */
 fun PackageParam.shieldFreeRecommend(versionCode: Int) {
     val freeRecommendHookClass: String? = when (versionCode) {
         788 -> "la.a"
-        in 792..796 -> "ka.a"
+        in 792..800 -> "ka.a"
         else -> null
     }
-    /**
-     * 免费-免费推荐
-     */
     freeRecommendHookClass?.hook {
         injectMember {
             method {
@@ -186,7 +183,7 @@ fun PackageParam.shieldFreeRecommend(versionCode: Int) {
  */
 fun PackageParam.shieldNewBook(versionCode: Int) {
     when (versionCode) {
-        in 792..796 -> {
+        in 792..800 -> {
             /**
              * 精选-新书
              */
@@ -304,7 +301,7 @@ fun PackageParam.shieldNewBook(versionCode: Int) {
  */
 fun PackageParam.shieldFreeNewBook(versionCode: Int) {
     when (versionCode) {
-        in 788..796 -> {
+        in 788..800 -> {
             findClass("com.qidian.QDReader.ui.fragment.QDNewBookInStoreFragment").hook {
                 injectMember {
                     method {
@@ -367,14 +364,11 @@ fun PackageParam.shieldFreeNewBook(versionCode: Int) {
 
 /**
  * 屏蔽畅销精选、主编力荐等更多
- * 上级调用:com.qidian.QDReader.ui.view.BookItemView.k0() 在刷新前修改List数据
+ * 上级调用:com.qidian.QDReader.ui.activity.QDNewBookInStoreActivity.initView() 在刷新前修改List数据
  */
 fun PackageParam.shieldHotAndRecommend(versionCode: Int) {
     when (versionCode) {
-        in 788..796 -> {
-            /**
-             * 畅销精选、主编力荐等更多
-             */
+        in 788..800 -> {
             findClass("com.qidian.QDReader.ui.adapter.s").hook {
                 injectMember {
                     method {
@@ -453,7 +447,7 @@ fun PackageParam.shieldNewBookAndRecommend(versionCode: Int) {
                 }
             }
         }
-        in 792..796 -> {
+        in 792..800 -> {
             findClass("com.qidian.QDReader.ui.fragment.SanJiangPagerFragment").hook {
                 injectMember {
                     method {
@@ -508,7 +502,7 @@ fun PackageParam.shieldNewBookAndRecommend(versionCode: Int) {
  */
 fun PackageParam.shieldCategoryAllBook(versionCode: Int) {
     when (versionCode) {
-        in 788..792 -> {
+        in 788..800 -> {
             /**
              * 分类-全部作品
              */
@@ -541,7 +535,7 @@ fun PackageParam.shieldCategoryAllBook(versionCode: Int) {
  */
 fun PackageParam.shieldSearchFind(versionCode: Int) {
     when (versionCode) {
-        in 788..796 -> {
+        in 788..800 -> {
             /**
              * 搜索发现(热词)
              */
@@ -581,7 +575,7 @@ fun PackageParam.shieldSearch(
          */
         val needHookClass: String? = when (versionCode) {
             788 -> "o9.d"
-            in 792..796 -> "n9.d"
+            in 792..800 -> "n9.d"
             else -> null
         }
         /**
@@ -604,7 +598,7 @@ fun PackageParam.shieldSearch(
         } ?: loggerE(msg = "屏蔽热门作品榜更多不支持的版本号: $versionCode")
     }
     when (versionCode) {
-        in 788..796 -> {
+        in 788..800 -> {
             findClass("com.qidian.QDReader.ui.view.search.SearchHomePageRankView").hook {
                 if (isNeedShieldBookRank) {
                     /**
@@ -660,7 +654,7 @@ fun PackageParam.shieldSearch(
  */
 fun PackageParam.shieldSearchRecommend(versionCode: Int) {
     when (versionCode) {
-        in 788..796 -> {
+        in 788..800 -> {
             /**
              * 搜索-为你推荐
              */
