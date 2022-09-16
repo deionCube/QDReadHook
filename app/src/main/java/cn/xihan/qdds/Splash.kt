@@ -42,7 +42,7 @@ fun PackageParam.splashPage(
  */
 fun PackageParam.disableSplash(versionCode: Int) {
     when (versionCode) {
-        in 758..800 -> {
+        in 758..804 -> {
             findClass("com.qidian.QDReader.bll.splash.SplashManager").hook {
                 injectMember {
                     method {
@@ -85,7 +85,7 @@ fun PackageParam.enableCustomSplash(
     customSplashImageType: Int = 0
 ) {
     when (versionCode) {
-        in 758..800 -> {
+        in 758..804 -> {
             findClass("com.qidian.QDReader.ui.activity.SplashImageActivity").hook {
                 if (!isEnableCustomSplashImageShowAllButton) {
                     injectMember {

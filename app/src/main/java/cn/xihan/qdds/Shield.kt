@@ -53,29 +53,33 @@ fun PackageParam.shieldOption(versionCode: Int, optionValueSet: Set<Int>) {
 fun PackageParam.shieldDailyReading(
     versionCode: Int
 ) {
-    when (versionCode) {
-        in 788..850 -> {
-            findClass("com.qidian.QDReader.component.api.b1").hook {
-                injectMember {
-                    method {
-                        name = "j"
-                        emptyParam()
-                        returnType = ArrayListClass
-                    }
+    /**
+     * 上级调用:com.qidian.QDReader.ui.activity.DailyReadingActivity.onCreate bindView()
+     */
+    val needHookClass = when (versionCode) {
+        in 788..800 -> "com.qidian.QDReader.component.api.b1"
+        in 804..810 -> "com.qidian.QDReader.component.api.f1"
+        else -> null
+    }
 
-                    afterHook {
-                        val list = result as? ArrayList<*>
-                        list?.let {
-                            safeRun {
-                                result = parseNeedShieldList(list)
-                            }
-                        }
+    needHookClass?.hook {
+        injectMember {
+            method {
+                name = "j"
+                emptyParam()
+                returnType = ArrayListClass
+            }
+
+            afterHook {
+                val list = result as? ArrayList<*>
+                list?.let {
+                    safeRun {
+                        result = parseNeedShieldList(list)
                     }
                 }
             }
         }
-        else -> loggerE(msg = "屏蔽每日导读不支持的版本号为: $versionCode")
-    }
+    } ?: loggerE(msg = "屏蔽每日导读不支持的版本号为: $versionCode")
 }
 
 /**
@@ -83,7 +87,7 @@ fun PackageParam.shieldDailyReading(
  */
 fun PackageParam.shieldChoice(versionCode: Int) {
     when (versionCode) {
-        in 788..800 -> {
+        in 788..804 -> {
             /**
              * 精选主页面
              */
@@ -113,7 +117,7 @@ fun PackageParam.shieldChoice(versionCode: Int) {
  */
 fun PackageParam.shieldCategory(versionCode: Int) {
     when (versionCode) {
-        in 788..800 -> {
+        in 788..804 -> {
             /**
              * 分类
              * 上级调用:com.qidian.QDReader.ui.adapter.x6.onBindContentItemViewHolder if(v1 == 2)
@@ -145,13 +149,15 @@ fun PackageParam.shieldCategory(versionCode: Int) {
 
 /**
  * 屏蔽精选-免费-免费推荐
- * 上级调用:com.qidian.QDReader.ui.fragment.QDBookStoreFragment.onViewInject mAdapter
+ * 上级调用:com.qidian.QDReader.ui.fragment.QDBookStoreFragment.onViewInject
+ * mAdapter
+ * onBindContentItemViewHolder
  * if(this.getContentItemViewType(arg8) != 8)
  */
 fun PackageParam.shieldFreeRecommend(versionCode: Int) {
     val freeRecommendHookClass: String? = when (versionCode) {
         788 -> "la.a"
-        in 792..800 -> "ka.a"
+        in 792..804 -> "ka.a"
         else -> null
     }
     freeRecommendHookClass?.hook {
@@ -183,7 +189,7 @@ fun PackageParam.shieldFreeRecommend(versionCode: Int) {
  */
 fun PackageParam.shieldNewBook(versionCode: Int) {
     when (versionCode) {
-        in 792..800 -> {
+        in 792..850 -> {
             /**
              * 精选-新书
              */
@@ -301,7 +307,7 @@ fun PackageParam.shieldNewBook(versionCode: Int) {
  */
 fun PackageParam.shieldFreeNewBook(versionCode: Int) {
     when (versionCode) {
-        in 788..800 -> {
+        in 788..804 -> {
             findClass("com.qidian.QDReader.ui.fragment.QDNewBookInStoreFragment").hook {
                 injectMember {
                     method {
@@ -368,7 +374,7 @@ fun PackageParam.shieldFreeNewBook(versionCode: Int) {
  */
 fun PackageParam.shieldHotAndRecommend(versionCode: Int) {
     when (versionCode) {
-        in 788..800 -> {
+        in 788..850 -> {
             findClass("com.qidian.QDReader.ui.adapter.s").hook {
                 injectMember {
                     method {
@@ -492,6 +498,54 @@ fun PackageParam.shieldNewBookAndRecommend(versionCode: Int) {
                 }
             }
         }
+        in 804..850 -> {
+            /**
+             *上级调用:com.qidian.QDReader.ui.fragment.SanJiangPagerFragment mAdapter
+             */
+            findClass("com.qidian.QDReader.ui.adapter.lb").hook {
+                injectMember {
+                    method {
+                        name = "q"
+                        param(ListClass)
+                        returnType = UnitType
+                    }
+                    afterHook {
+                        val list = result as? MutableList<*>
+                        list?.let {
+                            safeRun {
+                                val iterator = it.iterator()
+                                while (iterator.hasNext()) {
+                                    val item = iterator.next().toJSONString()
+                                    val json = item.parseObject()
+                                    val jb = json.getJSONObject("BookStoreItem")
+                                    if (jb != null) {
+                                        val authorName = jb.getString("AuthorName")
+                                        val bookName = jb.getString("BookName")
+                                        val categoryName = jb.getString("CategoryName")
+                                        val array = jb.getJSONArray("tagList")
+                                        val bookTypeArray = mutableSetOf(categoryName)
+                                        if (!array.isNullOrEmpty()) {
+                                            for (i in array.indices) {
+                                                array += array.getString(i)
+                                            }
+                                        }
+                                        val isNeedShield = isNeedShield(
+                                            bookName = bookName,
+                                            authorName = authorName,
+                                            bookType = bookTypeArray
+                                        )
+                                        if (isNeedShield) {
+                                            iterator.remove()
+                                        }
+                                    }
+                                }
+                                result = it
+                            }
+                        }
+                    }
+                }
+            }
+        }
 
         else -> loggerE(msg = "屏蔽新书强推、三江推荐不支持的版本号: $versionCode")
     }
@@ -502,7 +556,7 @@ fun PackageParam.shieldNewBookAndRecommend(versionCode: Int) {
  */
 fun PackageParam.shieldCategoryAllBook(versionCode: Int) {
     when (versionCode) {
-        in 788..800 -> {
+        in 788..804 -> {
             /**
              * 分类-全部作品
              */
@@ -535,7 +589,7 @@ fun PackageParam.shieldCategoryAllBook(versionCode: Int) {
  */
 fun PackageParam.shieldSearchFind(versionCode: Int) {
     when (versionCode) {
-        in 788..800 -> {
+        in 788..850 -> {
             /**
              * 搜索发现(热词)
              */
@@ -571,11 +625,11 @@ fun PackageParam.shieldSearch(
 ) {
     if (isNeedShieldBookRank) {
         /**
-         * 上级调用: com.qidian.QDReader.ui.activity.QDSearchListActivity.bindView()
+         * 上级调用: com.qidian.QDReader.ui.activity.QDSearchListActivity.bindView() mAdapter
          */
         val needHookClass: String? = when (versionCode) {
             788 -> "o9.d"
-            in 792..800 -> "n9.d"
+            in 792..804 -> "n9.d"
             else -> null
         }
         /**
@@ -598,7 +652,7 @@ fun PackageParam.shieldSearch(
         } ?: loggerE(msg = "屏蔽热门作品榜更多不支持的版本号: $versionCode")
     }
     when (versionCode) {
-        in 788..800 -> {
+        in 788..850 -> {
             findClass("com.qidian.QDReader.ui.view.search.SearchHomePageRankView").hook {
                 if (isNeedShieldBookRank) {
                     /**
@@ -654,7 +708,7 @@ fun PackageParam.shieldSearch(
  */
 fun PackageParam.shieldSearchRecommend(versionCode: Int) {
     when (versionCode) {
-        in 788..800 -> {
+        in 788..850 -> {
             /**
              * 搜索-为你推荐
              */

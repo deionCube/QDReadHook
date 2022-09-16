@@ -268,6 +268,35 @@ class HookEntry : IYukiHookXposedInit {
 
              */
 
+            /*
+            findClass("com.qidian.QDReader.repository.entity.QDBKTActionItem").hook {
+                injectMember {
+                    constructor {
+                        param(JSONObjectClass)
+                        beforeHook {
+                            val jb = args[0] as? JSONObject
+                            loggerE(msg = "jb: $jb")
+                        }
+
+                    }
+                }
+            }
+
+             */
+
+            findClass("com.qidian.QDReader.ui.activity.MainGroupActivity").hook {
+                injectMember {
+                    method {
+                        name = "lambda\$checkCheckInStatus\$12"
+                        param(BooleanType)
+                        returnType = UnitType
+                    }
+                    beforeHook {
+                        args(0).set(false)
+                    }
+                }
+            }
+
 
         }
     }
@@ -437,7 +466,7 @@ fun PackageParam.autoSignIn(
  */
 fun PackageParam.oldAutoSignIn(versionCode: Int) {
     when (versionCode) {
-        in 758..800 -> {
+        in 758..804 -> {
             findClass("com.qidian.QDReader.ui.view.bookshelfview.CheckInReadingTimeView").hook {
                 injectMember {
                     method {
@@ -468,7 +497,7 @@ fun PackageParam.oldAutoSignIn(versionCode: Int) {
  */
 fun PackageParam.newAutoSignIn(versionCode: Int) {
     when (versionCode) {
-        in 758..800 -> {
+        in 758..804 -> {
             findClass("com.qidian.QDReader.ui.view.bookshelfview.CheckInReadingTimeViewNew").hook {
                 injectMember {
                     method {
@@ -602,7 +631,7 @@ fun PackageParam.removeUpdate(versionCode: Int) {
     val neddHookClass = when (versionCode) {
         in 758..788 -> "com.qidian.QDReader.util.z4"
         in 792..796 -> "com.qidian.QDReader.util.i5"
-        800 -> "com.qidian.QDReader.util.l5"
+        in 800..804 -> "com.qidian.QDReader.util.l5"
         else -> null
     }
     neddHookClass?.hook {
@@ -624,7 +653,7 @@ fun PackageParam.removeUpdate(versionCode: Int) {
     }
 
     when (versionCode) {
-        in 758..800 -> {
+        in 758..804 -> {
 
             /**
              * 上级调用:com.qidian.QDReader.ui.activity.MainGroupActivity.checkUpdate()

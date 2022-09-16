@@ -22,7 +22,7 @@ import com.highcapable.yukihookapi.hook.type.java.UnitType
  */
 fun PackageParam.hideSearchAllView(versionCode: Int) {
     when (versionCode) {
-        in 788..800 -> {
+        in 788..804 -> {
             /**
              * 搜索页面一刀切
              */
@@ -178,7 +178,7 @@ fun PackageParam.hideBottomNavigationFind(versionCode: Int) {
  */
 fun PackageParam.accountViewHide(versionCode: Int) {
     when (versionCode) {
-        in 792..800 -> {
+        in 792..850 -> {
             /**
              * 我-隐藏控件
              */
