@@ -2,7 +2,6 @@ package cn.xihan.qdds
 
 import android.content.Context
 import android.view.View
-import android.widget.ImageView
 import android.widget.LinearLayout
 import com.alibaba.fastjson2.parseObject
 import com.alibaba.fastjson2.toJSONString
@@ -37,80 +36,6 @@ fun PackageParam.hideSearchAllView(versionCode: Int) {
             }
         }
         else -> loggerE(msg = "屏蔽搜索页面一刀切不支持的版本号: $versionCode")
-    }
-}
-
-/**
- * 移除书架右下角浮窗
- */
-fun PackageParam.removeBookshelfFloatWindow(versionCode: Int) {
-    when (versionCode) {
-        in 758..768 -> {
-            findClass("com.qidian.QDReader.ui.fragment.QDBookShelfPagerFragment").hook {
-                injectMember {
-                    method {
-                        name = "loadBookShelfAd"
-                    }
-                    intercept()
-                }
-
-                injectMember {
-                    method {
-                        name = "onViewInject"
-                        param(View::class.java)
-                    }
-                    afterHook {
-                        val imgAdIconClose = getView<ImageView>(
-                            instance, "imgAdIconClose"
-                        )
-                        imgAdIconClose?.visibility = View.GONE
-                        val layoutImgAdIcon = getView<LinearLayout>(
-                            instance, "layoutImgAdIcon"
-                        )
-                        layoutImgAdIcon?.visibility = View.GONE
-
-                        val imgBookShelfActivityIcon = getView<ImageView>(
-                            instance, "imgBookShelfActivityIcon"
-                        )
-                        imgBookShelfActivityIcon?.visibility = View.GONE
-                    }
-                }
-            }
-        }
-        in 772..850 -> {
-            findClass("com.qidian.QDReader.ui.fragment.QDBookShelfPagerFragment").hook {
-                injectMember {
-                    method {
-                        name = "loadBookShelfAd"
-                    }
-                    intercept()
-                }
-
-                injectMember {
-                    method {
-                        name = "showBookShelfHoverAd"
-                    }
-                    intercept()
-                }
-
-                injectMember {
-                    method {
-                        name = "onViewInject"
-                        param(View::class.java)
-                    }
-                    afterHook {
-                        val layoutImgAdIcon = getView<LinearLayout>(
-                            instance, "layoutImgAdIcon"
-                        )
-                        layoutImgAdIcon?.visibility = View.GONE
-                    }
-                }
-
-            }
-        }
-        else -> {
-            loggerE(msg = "移除书架右下角浮窗不支持的版本号为: $versionCode")
-        }
     }
 }
 
@@ -226,6 +151,52 @@ fun PackageParam.accountViewHide(versionCode: Int) {
 }
 
 /**
+ * 我-移除青少年模式弹框
+ */
+fun PackageParam.removeQSNYDialog(versionCode: Int) {
+    when (versionCode) {
+        in 758..850 -> {
+            findClass("com.qidian.QDReader.bll.helper.g1").hook {
+                injectMember {
+                    method {
+                        name = "run"
+                        returnType = UnitType
+                    }
+                    intercept()
+                }
+            }
+        }
+        else -> loggerE(msg = "移除青少年模式弹框不支持的版本号为: $versionCode")
+    }
+
+/*
+    /**
+     * 上级调用位置:com.qidian.QDReader.bll.manager.QDTeenagerManager.teenWorkDialog
+     */
+    val dialogClassName: String? = when (versionCode) {
+        in 758..768 -> "com.qidian.QDReader.bll.helper.v1"
+        772 -> "com.qidian.QDReader.bll.helper.w1"
+        in 776..800 -> "com.qidian.QDReader.bll.helper.t1"
+        else -> null
+    }
+    dialogClassName?.hook {
+        injectMember {
+            method {
+                name = "show"
+                superClass()
+            }
+            beforeHook {
+                printCallStack(instance.javaClass.name)
+            }
+            //intercept()
+        }
+    } ?: loggerE(msg = "移除青少年模式弹框不支持的版本号为: $versionCode")
+
+ */
+
+}
+
+/**
  * 我-隐藏控件配置
  */
 fun Context.showHideOptionDialog() {
@@ -252,6 +223,13 @@ fun Context.showHideOptionDialog() {
         isEnable = HookEntry.optionEntity.viewHideOption.enableHideMainBottomNavigationBarFind
     ) {
         HookEntry.optionEntity.viewHideOption.enableHideMainBottomNavigationBarFind = it
+    }
+    val enableDisableQSNModeDialogOption = CustomSwitch(
+        context = this,
+        title = "关闭青少年模式弹框",
+        isEnable = HookEntry.optionEntity.mainOption.enableDisableQSNModeDialog
+    ) {
+        HookEntry.optionEntity.mainOption.enableDisableQSNModeDialog = it
     }
     val accountViewHideOptionSwitch = CustomSwitch(
         context = this,
@@ -294,6 +272,7 @@ fun Context.showHideOptionDialog() {
     linearLayout.addView(searchHideAllViewOption)
     linearLayout.addView(enableHideBottomDotOption)
     linearLayout.addView(mainBottomNavigationBarFindOptionSwitch)
+    linearLayout.addView(enableDisableQSNModeDialogOption)
     linearLayout.addView(accountViewHideOptionSwitch)
     linearLayout.addView(customTextView)
 

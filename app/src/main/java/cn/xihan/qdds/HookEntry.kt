@@ -60,6 +60,10 @@ class HookEntry : IYukiHookXposedInit {
                 removeQSNYDialog(versionCode)
             }
 
+            if (optionEntity.advOption.enableRemoveBookshelfActivityPopup){
+                removeBookshelfActivityPopup(versionCode)
+            }
+
             if (optionEntity.advOption.enableRemoveBookshelfFloat) {
                 removeBookshelfFloatWindow(versionCode)
             }
@@ -284,18 +288,7 @@ class HookEntry : IYukiHookXposedInit {
 
              */
 
-            findClass("com.qidian.QDReader.ui.activity.MainGroupActivity").hook {
-                injectMember {
-                    method {
-                        name = "lambda\$checkCheckInStatus\$12"
-                        param(BooleanType)
-                        returnType = UnitType
-                    }
-                    beforeHook {
-                        args(0).set(false)
-                    }
-                }
-            }
+
 
 
         }
@@ -575,164 +568,6 @@ fun PackageParam.enableLocalCard(versionCode: Int) {
 }
 
 /**
- * 移除青少年模式弹框
- */
-fun PackageParam.removeQSNYDialog(versionCode: Int) {
-    when (versionCode) {
-        in 758..850 -> {
-            findClass("com.qidian.QDReader.bll.helper.g1").hook {
-                injectMember {
-                    method {
-                        name = "run"
-                        returnType = UnitType
-                    }
-                    intercept()
-                }
-            }
-        }
-        else -> loggerE(msg = "移除青少年模式弹框不支持的版本号为: $versionCode")
-    }
-
-/*
-    /**
-     * 上级调用位置:com.qidian.QDReader.bll.manager.QDTeenagerManager.teenWorkDialog
-     */
-    val dialogClassName: String? = when (versionCode) {
-        in 758..768 -> "com.qidian.QDReader.bll.helper.v1"
-        772 -> "com.qidian.QDReader.bll.helper.w1"
-        in 776..800 -> "com.qidian.QDReader.bll.helper.t1"
-        else -> null
-    }
-    dialogClassName?.hook {
-        injectMember {
-            method {
-                name = "show"
-                superClass()
-            }
-            beforeHook {
-                printCallStack(instance.javaClass.name)
-            }
-            //intercept()
-        }
-    } ?: loggerE(msg = "移除青少年模式弹框不支持的版本号为: $versionCode")
-
- */
-
-}
-
-/**
- * 禁用检查更新
- * 上级调用:com.qidian.QDReader.ui.activity.MainGroupActivity.onCreate(android.os.Bundle)
- */
-fun PackageParam.removeUpdate(versionCode: Int) {
-    /**
-     * 也可全局搜索 "UpgradeCommon"、"checkUpdate:"
-     */
-    val neddHookClass = when (versionCode) {
-        in 758..788 -> "com.qidian.QDReader.util.z4"
-        in 792..796 -> "com.qidian.QDReader.util.i5"
-        in 800..804 -> "com.qidian.QDReader.util.l5"
-        else -> null
-    }
-    neddHookClass?.hook {
-        injectMember {
-            method {
-                name = "b"
-                returnType = UnitType
-            }
-            intercept()
-        }
-
-        injectMember {
-            method {
-                name = "a"
-                returnType = UnitType
-            }
-            intercept()
-        }
-    }
-
-    when (versionCode) {
-        in 758..804 -> {
-
-            /**
-             * 上级调用:com.qidian.QDReader.ui.activity.MainGroupActivity.checkUpdate()
-             */
-            findClass("w4.h").hook {
-                injectMember {
-                    method {
-                        name = "l"
-                        returnType = UnitType
-                    }
-                    intercept()
-                }
-            }
-
-            findClass("com.qidian.QDReader.ui.activity.MainGroupActivity").hook {
-                injectMember {
-                    method {
-                        name = "checkUpdate"
-                        returnType = UnitType
-                    }
-                    intercept()
-                }
-            }
-
-            findClass("com.qidian.QDReader.ui.fragment.QDFeedListPagerFragment").hook {
-                injectMember {
-                    method {
-                        name = "checkAppUpdate"
-                        returnType = UnitType
-                    }
-                    intercept()
-                }
-            }
-
-            findClass("com.tencent.upgrade.core.UpdateCheckProcessor").hook {
-                injectMember {
-                    method {
-                        name = "checkAppUpgrade"
-                        returnType = UnitType
-                    }
-                    intercept()
-                }
-            }
-
-            findClass("com.tencent.upgrade.core.UpgradeManager").hook {
-                injectMember {
-                    method {
-                        name = "init"
-                        returnType = UnitType
-                    }
-                    intercept()
-                }
-            }
-
-            findClass("com.qidian.QDReader.ui.activity.AboutActivity").hook {
-                injectMember {
-                    method {
-                        name = "updateVersion"
-                        returnType = UnitType
-                    }
-                    intercept()
-                }
-
-                injectMember {
-                    method {
-                        name = "getVersionNew"
-                        returnType = UnitType
-                    }
-                    intercept()
-                }
-
-
-            }
-        }
-        else -> loggerE(msg = "禁用检查更新不支持的版本号为: $versionCode")
-    }
-}
-
-/**
  * 主要配置弹框
  * @param mainOption 配置模型
  */
@@ -762,19 +597,13 @@ fun Context.showMainOptionDialog() {
         optionEntity.mainOption.enableLocalCard = it
     }
 
-    val enableDisableQSNModeDialogOption = CustomSwitch(
-        context = this,
-        title = "关闭青少年模式弹框",
-        isEnable = optionEntity.mainOption.enableDisableQSNModeDialog
-    ) {
-        optionEntity.mainOption.enableDisableQSNModeDialog = it
-    }
+
     linearLayout.addView(packageNameOption)
     linearLayout.addView(enableAutoSignOption)
     linearLayout.addView(enableOldLayoutOption)
     linearLayout.addView(enableLocalCardOption)
 
-    linearLayout.addView(enableDisableQSNModeDialogOption)
+
     alertDialog {
         title = "主要配置"
         customView = linearLayout

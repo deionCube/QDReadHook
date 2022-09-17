@@ -36,6 +36,7 @@ data class OptionEntity(
 ) {
     /**
      * 广告配置
+     * @param enableRemoveBookshelfActivityPopup 开启移除书架活动弹框
      * @param enableRemoveBookshelfFloat 开启移除书架浮窗
      * @param enableRemoveBookshelfBottomAd 开启移除书架底部导航栏广告
      * @param enableRemoveAccountCenterAd 开启移除我-中间广告
@@ -45,6 +46,7 @@ data class OptionEntity(
     @Keep
     @Serializable
     data class AdvOption(
+        @SerialName("enableRemoveBookshelfActivityPopup") var enableRemoveBookshelfActivityPopup: Boolean = false,
         @SerialName("enableDisableAdv") var enableDisableAdv: Boolean = false,
         @SerialName("enableDisableCheckUpdate") var enableDisableCheckUpdate: Boolean = false,
         @SerialName("enableRemoveAccountCenterAd") var enableRemoveAccountCenterAd: Boolean = false,
