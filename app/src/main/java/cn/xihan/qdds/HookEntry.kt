@@ -60,7 +60,7 @@ class HookEntry : IYukiHookXposedInit {
                 removeQSNYDialog(versionCode)
             }
 
-            if (optionEntity.advOption.enableRemoveBookshelfActivityPopup){
+            if (optionEntity.advOption.enableRemoveBookshelfActivityPopup) {
                 removeBookshelfActivityPopup(versionCode)
             }
 
@@ -82,6 +82,10 @@ class HookEntry : IYukiHookXposedInit {
 
             if (optionEntity.advOption.enableDisableAdv) {
                 disableAd(versionCode)
+            }
+
+            if (optionEntity.viewHideOption.enableHideBookshelfDailyReading){
+                hideBookshelfDailyReading(versionCode)
             }
 
             if (optionEntity.viewHideOption.enableSearchHideAllView) {

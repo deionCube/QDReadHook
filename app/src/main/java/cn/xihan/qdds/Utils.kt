@@ -95,6 +95,10 @@ fun printCallStack(className: String = "") {
     loggerE(msg = "Dump Stack: ---------------end----------------")
 }
 
+fun Any.printCallStack() {
+    printCallStack(this.javaClass.name)
+}
+
 /**
  * 容错安全运行方法
  */

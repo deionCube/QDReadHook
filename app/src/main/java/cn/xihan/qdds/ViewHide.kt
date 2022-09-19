@@ -17,6 +17,42 @@ import com.highcapable.yukihookapi.hook.type.java.UnitType
  * @介绍 :
  */
 /**
+ * 隐藏书架-每日导读
+ * 上级调用:com.qidian.QDReader.ui.fragment.QDBookShelfPagerFragment.bindView()
+ * bindGridAdapter()
+ * bindListAdapter()
+ */
+fun PackageParam.hideBookshelfDailyReading(versionCode: Int) {
+    when (versionCode) {
+        804 -> {
+            findClass("com.qidian.QDReader.ui.adapter.j0").hook {
+                injectMember {
+                    method {
+                        name = "getHeaderItemCount"
+                        emptyParam()
+                        returnType = IntType
+                    }
+                    replaceTo(0)
+                }
+            }
+
+            findClass("com.qidian.QDReader.ui.adapter.h0").hook {
+                injectMember {
+                    method {
+                        name = "getHeaderItemCount"
+                        emptyParam()
+                        returnType = IntType
+                    }
+                    replaceTo(0)
+                }
+            }
+        }
+        else -> loggerE(msg = "隐藏书架-每日导读不支持版本号:$versionCode")
+    }
+
+}
+
+/**
  * 搜索页面一刀切
  */
 fun PackageParam.hideSearchAllView(versionCode: Int) {
@@ -202,18 +238,25 @@ fun PackageParam.removeQSNYDialog(versionCode: Int) {
 fun Context.showHideOptionDialog() {
     val linearLayout = CustomLinearLayout(this, isAutoWidth = false)
 
-    /**
-     * 搜索隐藏所有控件
-     */
+    val hideBookshelfDailyReadingOption = CustomSwitch(
+        context = this,
+        title = "隐藏书架-每日导读",
+        isEnable = HookEntry.optionEntity.viewHideOption.enableHideBookshelfDailyReading
+    ) {
+        HookEntry.optionEntity.viewHideOption.enableHideBookshelfDailyReading = it
+    }
+
     val searchHideAllViewOption = CustomSwitch(
         context = this,
         title = "搜索页面一刀切",
         isEnable = HookEntry.optionEntity.viewHideOption.enableSearchHideAllView
-    ){
+    ) {
         HookEntry.optionEntity.viewHideOption.enableSearchHideAllView = it
     }
     val enableHideBottomDotOption = CustomSwitch(
-        context = this, title = "隐藏底部小红点", isEnable = HookEntry.optionEntity.mainOption.enableHideBottomDot
+        context = this,
+        title = "隐藏底部小红点",
+        isEnable = HookEntry.optionEntity.mainOption.enableHideBottomDot
     ) {
         HookEntry.optionEntity.mainOption.enableHideBottomDot = it
     }
@@ -269,6 +312,7 @@ fun Context.showHideOptionDialog() {
             }
         }
     }
+    linearLayout.addView(hideBookshelfDailyReadingOption)
     linearLayout.addView(searchHideAllViewOption)
     linearLayout.addView(enableHideBottomDotOption)
     linearLayout.addView(mainBottomNavigationBarFindOptionSwitch)

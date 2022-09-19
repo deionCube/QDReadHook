@@ -200,6 +200,7 @@ fun PackageParam.disableAd(versionCode: Int) {
                 }
             }
 
+            /*
             findClass("com.qidian.QDReader.component.api.a").hook {
                 injectMember {
                     method {
@@ -209,6 +210,8 @@ fun PackageParam.disableAd(versionCode: Int) {
                     intercept()
                 }
             }
+
+             */
 
             // TODO 首页横幅广告:/argus/api/v2/adv/getadvlistbatch
 

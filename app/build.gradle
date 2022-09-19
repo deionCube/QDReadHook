@@ -107,7 +107,7 @@ dependencies {
     implementation "com.google.android.material:material:$materialVersion"
     implementation 'androidx.preference:preference-ktx:1.2.0'
     implementation "org.jetbrains.kotlinx:kotlinx-serialization-json:1.4.0"
-    implementation("com.alibaba.fastjson2:fastjson2-kotlin:2.0.13.android")
+    implementation("com.alibaba.fastjson2:fastjson2-kotlin:2.0.14.android")
 
     // 基础依赖
     implementation "com.highcapable.yukihookapi:api:$YuKiHookVersion"

@@ -114,6 +114,7 @@ data class OptionEntity(
 
     /**
      * 控件隐藏配置
+     * @param enableHideBookshelfDailyReading 开启隐藏书架每日导读
      * @param enableHideMainBottomNavigationBarFind 开启隐藏主页底部导航栏发现
      * @param enableSearchHideAllView 开启隐藏搜索全部控件
      * @param auccountOption 用户页面配置
@@ -121,6 +122,7 @@ data class OptionEntity(
     @Keep
     @Serializable
     data class ViewHideOption(
+        @SerialName("enableHideBookshelfDailyReading") var enableHideBookshelfDailyReading: Boolean = false,
         @SerialName("enableHideMainBottomNavigationBarFind") var enableHideMainBottomNavigationBarFind: Boolean = false,
         @SerialName("enableSearchHideAllView") var enableSearchHideAllView: Boolean = false,
         @SerialName("AccountOption") var accountOption: AccountOption = AccountOption()
