@@ -24,7 +24,7 @@ import com.highcapable.yukihookapi.hook.type.java.UnitType
  */
 fun PackageParam.hideBookshelfDailyReading(versionCode: Int) {
     when (versionCode) {
-        804 -> {
+        in 804..808 -> {
             findClass("com.qidian.QDReader.ui.adapter.j0").hook {
                 injectMember {
                     method {
@@ -57,7 +57,7 @@ fun PackageParam.hideBookshelfDailyReading(versionCode: Int) {
  */
 fun PackageParam.hideSearchAllView(versionCode: Int) {
     when (versionCode) {
-        in 788..804 -> {
+        in 788..808 -> {
             /**
              * 搜索页面一刀切
              */
@@ -188,6 +188,7 @@ fun PackageParam.accountViewHide(versionCode: Int) {
 
 /**
  * 我-移除青少年模式弹框
+ * 上级调用:com.qidian.QDReader.bll.helper.QDTeenagerHelper$Companion.a()
  */
 fun PackageParam.removeQSNYDialog(versionCode: Int) {
     when (versionCode) {

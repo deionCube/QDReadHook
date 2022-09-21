@@ -463,7 +463,7 @@ fun PackageParam.autoSignIn(
  */
 fun PackageParam.oldAutoSignIn(versionCode: Int) {
     when (versionCode) {
-        in 758..804 -> {
+        in 758..808 -> {
             findClass("com.qidian.QDReader.ui.view.bookshelfview.CheckInReadingTimeView").hook {
                 injectMember {
                     method {
@@ -494,7 +494,7 @@ fun PackageParam.oldAutoSignIn(versionCode: Int) {
  */
 fun PackageParam.newAutoSignIn(versionCode: Int) {
     when (versionCode) {
-        in 758..804 -> {
+        in 758..808 -> {
             findClass("com.qidian.QDReader.ui.view.bookshelfview.CheckInReadingTimeViewNew").hook {
                 injectMember {
                     method {

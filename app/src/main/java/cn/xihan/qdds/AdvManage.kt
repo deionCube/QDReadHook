@@ -6,6 +6,8 @@ import android.widget.ImageView
 import android.widget.LinearLayout
 import com.highcapable.yukihookapi.hook.log.loggerE
 import com.highcapable.yukihookapi.hook.param.PackageParam
+import com.highcapable.yukihookapi.hook.type.android.ContextClass
+import com.highcapable.yukihookapi.hook.type.java.BooleanType
 import com.highcapable.yukihookapi.hook.type.java.ListClass
 import com.highcapable.yukihookapi.hook.type.java.StringType
 import com.highcapable.yukihookapi.hook.type.java.UnitType
@@ -18,12 +20,13 @@ import com.highcapable.yukihookapi.hook.type.java.UnitType
  */
 /**
  * 移除书架活动弹框
+ * 上级调用:com.qidian.QDReader.component.config.QDAppConfigHelper$Companion.getBKTData
+ * activityPopupBean.getData()
  */
 fun PackageParam.removeBookshelfActivityPopup(versionCode: Int) {
     when (versionCode) {
-        804 -> {
+        in 804..808 -> {
             findClass("com.qidian.QDReader.repository.entity.config.ActivityPopupBean").hook {
-
                 injectMember {
                     method {
                         name = "getData"
@@ -166,6 +169,8 @@ fun PackageParam.disableAd(versionCode: Int) {
                 injectMember {
                     method {
                         name = "getAssetPluginName"
+                        emptyParam()
+                        returnType = StringType
                     }
                     replaceTo("")
                 }
@@ -175,8 +180,10 @@ fun PackageParam.disableAd(versionCode: Int) {
                 injectMember {
                     method {
                         name = "a"
+                        param(ContextClass)
+                        returnType = BooleanType
                     }
-                    intercept()
+                    replaceToFalse()
                 }
             }
 
@@ -231,7 +238,7 @@ fun PackageParam.removeUpdate(versionCode: Int) {
     val neddHookClass = when (versionCode) {
         in 758..788 -> "com.qidian.QDReader.util.z4"
         in 792..796 -> "com.qidian.QDReader.util.i5"
-        in 800..804 -> "com.qidian.QDReader.util.l5"
+        in 800..808 -> "com.qidian.QDReader.util.l5"
         else -> null
     }
     neddHookClass?.hook {
@@ -253,7 +260,7 @@ fun PackageParam.removeUpdate(versionCode: Int) {
     }
 
     when (versionCode) {
-        in 758..804 -> {
+        in 758..808 -> {
 
             /**
              * 上级调用:com.qidian.QDReader.ui.activity.MainGroupActivity.checkUpdate()

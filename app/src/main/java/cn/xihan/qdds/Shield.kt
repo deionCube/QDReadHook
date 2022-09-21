@@ -58,7 +58,7 @@ fun PackageParam.shieldDailyReading(
      */
     val needHookClass = when (versionCode) {
         in 788..800 -> "com.qidian.QDReader.component.api.b1"
-        in 804..810 -> "com.qidian.QDReader.component.api.f1"
+        in 804..820 -> "com.qidian.QDReader.component.api.f1"
         else -> null
     }
 
@@ -87,7 +87,7 @@ fun PackageParam.shieldDailyReading(
  */
 fun PackageParam.shieldChoice(versionCode: Int) {
     when (versionCode) {
-        in 788..804 -> {
+        in 788..808 -> {
             /**
              * 精选主页面
              */
@@ -114,10 +114,11 @@ fun PackageParam.shieldChoice(versionCode: Int) {
 
 /**
  * 屏蔽精选-分类
+ * 上级调用:com.qidian.QDReader.ui.activity.QDBookCategoryActivity  mLeftAdapter
  */
 fun PackageParam.shieldCategory(versionCode: Int) {
     when (versionCode) {
-        in 788..804 -> {
+        in 788..808 -> {
             /**
              * 分类
              * 上级调用:com.qidian.QDReader.ui.adapter.x6.onBindContentItemViewHolder if(v1 == 2)
@@ -157,7 +158,7 @@ fun PackageParam.shieldCategory(versionCode: Int) {
 fun PackageParam.shieldFreeRecommend(versionCode: Int) {
     val freeRecommendHookClass: String? = when (versionCode) {
         788 -> "la.a"
-        in 792..804 -> "ka.a"
+        in 792..808 -> "ka.a"
         else -> null
     }
     freeRecommendHookClass?.hook {
@@ -307,7 +308,7 @@ fun PackageParam.shieldNewBook(versionCode: Int) {
  */
 fun PackageParam.shieldFreeNewBook(versionCode: Int) {
     when (versionCode) {
-        in 788..804 -> {
+        in 788..808 -> {
             findClass("com.qidian.QDReader.ui.fragment.QDNewBookInStoreFragment").hook {
                 injectMember {
                     method {
@@ -371,6 +372,7 @@ fun PackageParam.shieldFreeNewBook(versionCode: Int) {
 /**
  * 屏蔽畅销精选、主编力荐等更多
  * 上级调用:com.qidian.QDReader.ui.activity.QDNewBookInStoreActivity.initView() 在刷新前修改List数据
+ * getMAdapter
  */
 fun PackageParam.shieldHotAndRecommend(versionCode: Int) {
     when (versionCode) {
@@ -556,7 +558,7 @@ fun PackageParam.shieldNewBookAndRecommend(versionCode: Int) {
  */
 fun PackageParam.shieldCategoryAllBook(versionCode: Int) {
     when (versionCode) {
-        in 788..804 -> {
+        in 788..808 -> {
             /**
              * 分类-全部作品
              */
@@ -629,7 +631,7 @@ fun PackageParam.shieldSearch(
          */
         val needHookClass: String? = when (versionCode) {
             788 -> "o9.d"
-            in 792..804 -> "n9.d"
+            in 792..808 -> "n9.d"
             else -> null
         }
         /**
