@@ -175,6 +175,7 @@ fun readOptionFile(): File? {
             "${Environment.getExternalStorageDirectory().absolutePath}/QDReader", "option.json"
         )
         if (!file.exists()) {
+            file.parentFile?.mkdirs()
             file.createNewFile()
             file.writeText(Json.encodeToString(defaultOptionEntity()))
         }
