@@ -171,12 +171,7 @@ fun readOptionEntity(): OptionEntity {
  */
 fun readOptionFile(): File? {
     try {
-        val file = File("${Environment.getExternalStorageDirectory().absolutePath}/QDReader");
-        if (!file.exists() && !file.isDirectory())      
-        {  
-            file.mkdir()
-        }
-        file = File(
+        val file = File(
             "${Environment.getExternalStorageDirectory().absolutePath}/QDReader", "option.json"
         )
         if (!file.exists()) {
