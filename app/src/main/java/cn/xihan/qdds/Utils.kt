@@ -1,7 +1,9 @@
 package cn.xihan.qdds
 
 import android.app.Activity
+import android.content.ComponentName
 import android.content.Context
+import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Environment
 import android.view.View
@@ -147,4 +149,33 @@ fun String.writeTextFile(fileName: String = "test") {
 fun Context.dp2px(dp: Float): Int {
     val scale = resources.displayMetrics.density
     return (dp * scale + 0.5f).toInt()
+}
+
+
+/**
+ * 隐藏应用图标
+ */
+fun Activity.hideAppIcon() {
+    val componentName = ComponentName(this, MainActivity::class.java.name)
+    if (packageManager.getComponentEnabledSetting(componentName) != PackageManager.COMPONENT_ENABLED_STATE_DISABLED) {
+        packageManager.setComponentEnabledSetting(
+            componentName,
+            PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
+            PackageManager.DONT_KILL_APP
+        )
+    }
+}
+
+/**
+ * 显示应用图标
+ */
+fun Activity.showAppIcon() {
+    val componentName = ComponentName(this, MainActivity::class.java.name)
+    if (packageManager.getComponentEnabledSetting(componentName) != PackageManager.COMPONENT_ENABLED_STATE_ENABLED) {
+        packageManager.setComponentEnabledSetting(
+            componentName,
+            PackageManager.COMPONENT_ENABLED_STATE_ENABLED,
+            PackageManager.DONT_KILL_APP
+        )
+    }
 }

@@ -85,9 +85,9 @@ data class OptionEntity(
     @Keep
     @Serializable
     data class ShieldOption(
-        @SerialName("authorList") var authorList: List<String> = listOf(),
-        @SerialName("bookNameList") var bookNameList: List<String> = listOf(),
-        @SerialName("bookTypeList") var bookTypeList: List<String> = listOf(),
+        @SerialName("authorList") var authorList: List<String> = emptyList(),
+        @SerialName("bookNameList") var bookNameList: List<String> = emptyList(),
+        @SerialName("bookTypeList") var bookTypeList: List<String> = emptyList(),
         @SerialName("shieldOptionValueSet") var shieldOptionValueSet: MutableSet<Int> = mutableSetOf(),
         @SerialName("enableBookTypeEnhancedBlocking") var enableBookTypeEnhancedBlocking: Boolean = false
     )
@@ -117,7 +117,7 @@ data class OptionEntity(
      * @param enableHideBookshelfDailyReading 开启隐藏书架每日导读
      * @param enableHideMainBottomNavigationBarFind 开启隐藏主页底部导航栏发现
      * @param enableSearchHideAllView 开启隐藏搜索全部控件
-     * @param auccountOption 用户页面配置
+     * @param accountOption 用户页面配置
      */
     @Keep
     @Serializable
@@ -216,9 +216,9 @@ fun defaultOptionEntity(): OptionEntity = OptionEntity(
         enableDisableAdv = true
     ), shieldOption = OptionEntity.ShieldOption(
         shieldOptionValueSet = mutableSetOf(),
-        authorList = mutableListOf(),
-        bookTypeList = mutableListOf(),
-        bookNameList = mutableListOf()
+        authorList = emptyList(),
+        bookTypeList = emptyList(),
+        bookNameList = emptyList()
     ), splashOption = OptionEntity.SplashOption(
         enableSplash = false,
         enableCustomSplash = false,

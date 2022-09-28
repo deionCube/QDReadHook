@@ -5,7 +5,9 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.widget.*
+import cn.xihan.qdds.HookEntry.Companion.NOT_SUPPORT_OLD_LAYOUT_VERSION_CODE
 import cn.xihan.qdds.HookEntry.Companion.optionEntity
+import cn.xihan.qdds.HookEntry.Companion.versionCode
 import com.alibaba.fastjson2.parseObject
 import com.alibaba.fastjson2.toJSONString
 import com.highcapable.yukihookapi.YukiHookAPI
@@ -44,7 +46,7 @@ class HookEntry : IYukiHookXposedInit {
                 autoSignIn(versionCode, optionEntity.mainOption.enableOldLayout)
             }
 
-            if (optionEntity.mainOption.enableOldLayout) {
+            if (optionEntity.mainOption.enableOldLayout && versionCode < NOT_SUPPORT_OLD_LAYOUT_VERSION_CODE) {
                 enableOldLayout(versionCode)
             }
 
@@ -84,7 +86,7 @@ class HookEntry : IYukiHookXposedInit {
                 disableAd(versionCode)
             }
 
-            if (optionEntity.viewHideOption.enableHideBookshelfDailyReading){
+            if (optionEntity.viewHideOption.enableHideBookshelfDailyReading) {
                 hideBookshelfDailyReading(versionCode)
             }
 
@@ -204,12 +206,16 @@ class HookEntry : IYukiHookXposedInit {
                                             showSplashOptionDialog()
                                         }
                                         val viewHideOptionTextView = CustomTextView(
-                                            context = this, mText = "隐藏控件相关设置", isBold = true
+                                            context = this,
+                                            mText = "隐藏控件相关设置",
+                                            isBold = true
                                         ) {
                                             showHideOptionDialog()
                                         }
                                         val openSourceryOptionTextView = CustomTextView(
-                                            context = this, mText = "开源地址及详细说明", isBold = true
+                                            context = this,
+                                            mText = "开源地址及详细说明",
+                                            isBold = true
                                         ) {
                                             val intent = Intent(Intent.ACTION_VIEW)
                                             intent.data =
@@ -276,24 +282,6 @@ class HookEntry : IYukiHookXposedInit {
 
              */
 
-            /*
-            findClass("com.qidian.QDReader.repository.entity.QDBKTActionItem").hook {
-                injectMember {
-                    constructor {
-                        param(JSONObjectClass)
-                        beforeHook {
-                            val jb = args[0] as? JSONObject
-                            loggerE(msg = "jb: $jb")
-                        }
-
-                    }
-                }
-            }
-
-             */
-
-
-
 
         }
     }
@@ -309,6 +297,11 @@ class HookEntry : IYukiHookXposedInit {
         }
 
         val versionCode by lazy { getApplicationVersionCode(QD_PACKAGE_NAME) }
+
+        /**
+         * 不支持旧版布局的版本号
+         */
+        const val NOT_SUPPORT_OLD_LAYOUT_VERSION_CODE = 800
 
         /**
          * 需要屏蔽的作者列表
@@ -355,9 +348,11 @@ class HookEntry : IYukiHookXposedInit {
          * @param bookType 书类型-可空
          */
         fun isNeedShield(
-            bookName: String?, authorName: String?, bookType: Set<String>?
+            bookName: String? = null, authorName: String? = null, bookType: Set<String>? = null
         ): Boolean {
-            //loggerE(msg = "bookName: $bookName\nauthorName:$authorName\nbookType:$bookType")
+            if (BuildConfig.DEBUG) {
+                loggerE(msg = "bookName: $bookName\nauthorName:$authorName\nbookType:$bookType")
+            }
             if (bookNameList.isNotEmpty()) {
                 if (!bookName.isNullOrBlank() && bookNameList.any { it in bookName }) {
                     return true
@@ -389,7 +384,7 @@ class HookEntry : IYukiHookXposedInit {
         fun parseKeyWordOption(it: String = ""): List<String> {
             return try {
                 if (it.isBlank()) {
-                    listOf()
+                    emptyList()
                 } else if (it.contains(";")) {
                     if (it.endsWith(";")) {
                         it.substring(0, it.length - 1).split(";").toList()
@@ -400,7 +395,7 @@ class HookEntry : IYukiHookXposedInit {
                     listOf(it)
                 }
             } catch (e: Exception) {
-                listOf()
+                emptyList()
             }
         }
 
@@ -451,11 +446,20 @@ class HookEntry : IYukiHookXposedInit {
 fun PackageParam.autoSignIn(
     versionCode: Int, isEnableOldLayout: Boolean = false
 ) {
-    if (isEnableOldLayout) {
-        oldAutoSignIn(versionCode)
-    } else {
-        newAutoSignIn(versionCode)
+    when {
+        versionCode >= NOT_SUPPORT_OLD_LAYOUT_VERSION_CODE -> {
+            newAutoSignIn(versionCode)
+        }
+
+        else -> {
+            if (isEnableOldLayout) {
+                oldAutoSignIn(versionCode)
+            } else {
+                newAutoSignIn(versionCode)
+            }
+        }
     }
+
 }
 
 /**
@@ -485,6 +489,7 @@ fun PackageParam.oldAutoSignIn(versionCode: Int) {
                 }
             }
         }
+
         else -> loggerE(msg = "自动签到不支持的版本号为: $versionCode")
     }
 }
@@ -521,6 +526,7 @@ fun PackageParam.newAutoSignIn(versionCode: Int) {
                 }
             }
         }
+
         else -> loggerE(msg = "自动签到不支持的版本号为: $versionCode")
     }
 }
@@ -530,7 +536,7 @@ fun PackageParam.newAutoSignIn(versionCode: Int) {
  */
 fun PackageParam.enableOldLayout(versionCode: Int) {
     when (versionCode) {
-        in 758..850 -> {
+        in 758..799 -> {
             findClass("com.qidian.QDReader.component.config.QDAppConfigHelper\$Companion").hook {
                 injectMember {
                     method {
@@ -540,6 +546,7 @@ fun PackageParam.enableOldLayout(versionCode: Int) {
                 }
             }
         }
+
         else -> loggerE(msg = "启用旧版布局不支持的版本号为: $versionCode")
     }
 }
@@ -567,6 +574,7 @@ fun PackageParam.enableLocalCard(versionCode: Int) {
                 }
             }
         }
+
         else -> loggerE(msg = "启用本地至尊卡不支持的版本号为: $versionCode")
     }
 }
@@ -590,21 +598,24 @@ fun Context.showMainOptionDialog() {
     ) {
         optionEntity.mainOption.enableAutoSign = it
     }
-    val enableOldLayoutOption = CustomSwitch(
-        context = this, title = "启用旧版布局", isEnable = optionEntity.mainOption.enableOldLayout
-    ) {
-        optionEntity.mainOption.enableOldLayout = it
-    }
     val enableLocalCardOption = CustomSwitch(
         context = this, title = "启用本地至尊卡", isEnable = optionEntity.mainOption.enableLocalCard
     ) {
         optionEntity.mainOption.enableLocalCard = it
     }
 
-
     linearLayout.addView(packageNameOption)
     linearLayout.addView(enableAutoSignOption)
-    linearLayout.addView(enableOldLayoutOption)
+    if (versionCode < NOT_SUPPORT_OLD_LAYOUT_VERSION_CODE) {
+        val enableOldLayoutOption = CustomSwitch(
+            context = this,
+            title = "启用旧版布局",
+            isEnable = optionEntity.mainOption.enableOldLayout
+        ) {
+            optionEntity.mainOption.enableOldLayout = it
+        }
+        linearLayout.addView(enableOldLayoutOption)
+    }
     linearLayout.addView(enableLocalCardOption)
 
 

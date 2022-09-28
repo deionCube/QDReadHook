@@ -1,6 +1,7 @@
 <resources>
     <string name="app_name">QD</string>
-
+    <!--功能-->
+    <string name="function">功能</string>
     <!--其他-->
     <string name="other">使用说明以及开源地址</string>
     <!--开源地址-->

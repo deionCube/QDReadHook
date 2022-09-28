@@ -10,6 +10,7 @@ import com.highcapable.yukihookapi.hook.log.loggerE
 import com.highcapable.yukihookapi.hook.param.PackageParam
 import com.highcapable.yukihookapi.hook.type.android.ContextClass
 import com.highcapable.yukihookapi.hook.type.java.ArrayListClass
+import com.highcapable.yukihookapi.hook.type.java.BooleanType
 import com.highcapable.yukihookapi.hook.type.java.IntType
 import com.highcapable.yukihookapi.hook.type.java.ListClass
 import com.highcapable.yukihookapi.hook.type.java.UnitType
@@ -39,8 +40,9 @@ fun PackageParam.shieldOption(versionCode: Int, optionValueSet: Set<Int>) {
             8 -> shieldFreeNewBook(versionCode)
             9 -> shieldHotAndRecommend(versionCode)
             10 -> shieldNewBookAndRecommend(versionCode)
-            11 -> shieldNewBook(versionCode)
-            12 -> shieldDailyReading(versionCode)
+            11 -> shieldNewBookRank(versionCode)
+            12 -> shieldNewBook(versionCode)
+            13 -> shieldDailyReading(versionCode)
         }
     }
     shieldSearch(versionCode, HookEntry.isEnableOption(1), HookEntry.isEnableOption(2))
@@ -108,6 +110,7 @@ fun PackageParam.shieldChoice(versionCode: Int) {
                 }
             }
         }
+
         else -> loggerE(msg = "屏蔽精选主页面不支持的版本号为: $versionCode")
     }
 }
@@ -144,6 +147,7 @@ fun PackageParam.shieldCategory(versionCode: Int) {
                 }
             }
         }
+
         else -> loggerE(msg = "屏蔽分类不支持的版本号为: $versionCode")
     }
 }
@@ -299,6 +303,7 @@ fun PackageParam.shieldNewBook(versionCode: Int) {
                 }
             }
         }
+
         else -> loggerE(msg = "屏蔽精选-新书不支持的版本号为: $versionCode")
     }
 }
@@ -365,6 +370,7 @@ fun PackageParam.shieldFreeNewBook(versionCode: Int) {
                 }
             }
         }
+
         else -> loggerE(msg = "屏蔽免费-新书入库不支持的版本号: $versionCode")
     }
 }
@@ -401,6 +407,7 @@ fun PackageParam.shieldHotAndRecommend(versionCode: Int) {
                 }
             }
         }
+
         else -> loggerE(msg = "屏蔽畅销精选、主编力荐等更多不支持的版本号: $versionCode")
     }
 }
@@ -455,6 +462,7 @@ fun PackageParam.shieldNewBookAndRecommend(versionCode: Int) {
                 }
             }
         }
+
         in 792..800 -> {
             findClass("com.qidian.QDReader.ui.fragment.SanJiangPagerFragment").hook {
                 injectMember {
@@ -500,7 +508,8 @@ fun PackageParam.shieldNewBookAndRecommend(versionCode: Int) {
                 }
             }
         }
-        in 804..850 -> {
+
+        in 804..808 -> {
             /**
              *上级调用:com.qidian.QDReader.ui.fragment.SanJiangPagerFragment mAdapter
              */
@@ -511,8 +520,8 @@ fun PackageParam.shieldNewBookAndRecommend(versionCode: Int) {
                         param(ListClass)
                         returnType = UnitType
                     }
-                    afterHook {
-                        val list = result as? MutableList<*>
+                    beforeHook {
+                        val list = args[0] as? MutableList<*>
                         list?.let {
                             safeRun {
                                 val iterator = it.iterator()
@@ -541,7 +550,7 @@ fun PackageParam.shieldNewBookAndRecommend(versionCode: Int) {
                                         }
                                     }
                                 }
-                                result = it
+                                args(0).set(it)
                             }
                         }
                     }
@@ -550,6 +559,40 @@ fun PackageParam.shieldNewBookAndRecommend(versionCode: Int) {
         }
 
         else -> loggerE(msg = "屏蔽新书强推、三江推荐不支持的版本号: $versionCode")
+    }
+}
+
+/**
+ * 屏蔽新书排行榜
+ */
+fun PackageParam.shieldNewBookRank(versionCode: Int) {
+    when (versionCode) {
+        808 -> {
+            findClass("com.qidian.QDReader.ui.fragment.RankingFragment").hook {
+                injectMember {
+                    method {
+                        name = "lambda\$loadBookList\$4"
+                        param(
+                            BooleanType,
+                            BooleanType,
+                            IntType,
+                            "com.qidian.QDReader.repository.entity.RankListData".clazz
+                        )
+                        returnType = UnitType
+                    }
+                    beforeHook {
+                        args[3]?.let {
+                            val rankBookList = getParam<MutableList<*>>(it, "rankBookList")
+                            rankBookList?.let {
+                                parseNeedShieldList(rankBookList)
+                            }
+                        }
+                    }
+                }
+
+            }
+        }
+        else -> loggerE(msg = "屏蔽新书排行榜不支持的版本号: $versionCode")
     }
 }
 
@@ -582,6 +625,7 @@ fun PackageParam.shieldCategoryAllBook(versionCode: Int) {
                 }
             }
         }
+
         else -> loggerE(msg = "屏蔽分类-全部作品不支持的版本号: $versionCode")
     }
 }
@@ -610,6 +654,7 @@ fun PackageParam.shieldSearchFind(versionCode: Int) {
                 }
             }
         }
+
         else -> loggerE(msg = "屏蔽搜索发现(热词)不支持的版本号: $versionCode")
     }
 }
@@ -701,6 +746,7 @@ fun PackageParam.shieldSearch(
                 }
             }
         }
+
         else -> loggerE(msg = "屏蔽搜索-热门作品榜、人气标签榜不支持的版本号: $versionCode")
     }
 }
@@ -727,6 +773,7 @@ fun PackageParam.shieldSearchRecommend(versionCode: Int) {
                 }
             }
         }
+
         else -> loggerE(msg = "屏蔽搜索-为你推荐不支持的版本号: $versionCode")
     }
 }
@@ -751,6 +798,7 @@ fun Context.showShieldOptionDialog() {
             "精选-免费-新书入库",
             "精选-畅销精选、主编力荐等更多",
             "精选-新书强推、三江推荐",
+            "精选-新书强推-新书排行榜",
             "精选-新书",
             "每日导读"
         )
