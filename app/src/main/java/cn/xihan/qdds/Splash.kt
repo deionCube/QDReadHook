@@ -42,7 +42,7 @@ fun PackageParam.splashPage(
  */
 fun PackageParam.disableSplash(versionCode: Int) {
     when (versionCode) {
-        in 758..808 -> {
+        in 758..812 -> {
             findClass("com.qidian.QDReader.bll.splash.SplashManager").hook {
                 injectMember {
                     method {
@@ -111,7 +111,7 @@ fun PackageParam.enableCustomSplash(
                     method {
                         name = "start"
                         param(
-                            "com.qidian.QDReader.ui.activity.SplashActivity".clazz,
+                            "com.qidian.QDReader.ui.activity.SplashActivity".toClass(),
                             StringType,
                             StringType,
                             LongType,

@@ -195,7 +195,7 @@ interface AlertBuilder<out D : DialogInterface> {
 abstract class AlertDialogBuilder : AlertBuilder<AlertDialog> {
 
     abstract val builder: AlertDialog.Builder
-    override val context get() = builder.context
+    override val context: Context get() = builder.context
 
     override var title: CharSequence
         @Deprecated(NO_GETTER, level = ERROR)

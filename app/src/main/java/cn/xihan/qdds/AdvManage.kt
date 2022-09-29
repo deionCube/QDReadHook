@@ -19,13 +19,13 @@ import com.highcapable.yukihookapi.hook.type.java.UnitType
  * @介绍 :
  */
 /**
- * 移除书架活动弹框
+ * 禁用书架活动弹框
  * 上级调用:com.qidian.QDReader.component.config.QDAppConfigHelper$Companion.getBKTData
  * activityPopupBean.getData()
  */
-fun PackageParam.removeBookshelfActivityPopup(versionCode: Int) {
+fun PackageParam.disableBookshelfActivityPopup(versionCode: Int) {
     when (versionCode) {
-        in 804..808 -> {
+        in 804..812 -> {
             findClass("com.qidian.QDReader.repository.entity.config.ActivityPopupBean").hook {
                 injectMember {
                     method {
@@ -41,14 +41,15 @@ fun PackageParam.removeBookshelfActivityPopup(versionCode: Int) {
                 }
             }
         }
+
         else -> loggerE(msg = "移除书架活动弹框不支持版本号：$versionCode")
     }
 }
 
 /**
- * 移除书架右下角浮窗
+ * 禁用书架右下角浮窗
  */
-fun PackageParam.removeBookshelfFloatWindow(versionCode: Int) {
+fun PackageParam.disableBookshelfFloatWindow(versionCode: Int) {
     when (versionCode) {
         in 758..768 -> {
             findClass("com.qidian.QDReader.ui.fragment.QDBookShelfPagerFragment").hook {
@@ -82,6 +83,7 @@ fun PackageParam.removeBookshelfFloatWindow(versionCode: Int) {
                 }
             }
         }
+
         in 772..850 -> {
             findClass("com.qidian.QDReader.ui.fragment.QDBookShelfPagerFragment").hook {
                 injectMember {
@@ -113,6 +115,7 @@ fun PackageParam.removeBookshelfFloatWindow(versionCode: Int) {
 
             }
         }
+
         else -> {
             loggerE(msg = "移除书架右下角浮窗不支持的版本号为: $versionCode")
         }
@@ -123,28 +126,55 @@ fun PackageParam.removeBookshelfFloatWindow(versionCode: Int) {
  * 移除底部导航栏中心广告
  * 上级调用位置:com.qidian.QDReader.ui.activity.MainGroupActivity.checkAdTab()
  */
-fun PackageParam.removeBottomNavigationCenterAd(versionCode: Int) {
-    val hookClassName = when (versionCode) {
-        in 758..796 -> "com.qidian.QDReader.ui.activity.MainGroupActivity\$t"
-        in 800..850 -> "com.qidian.QDReader.ui.activity.MainGroupActivity\$a"
-        else -> null
-    }
-    hookClassName?.hook {
-        injectMember {
-            method {
-                name = "c"
+fun PackageParam.disableBottomNavigationCenterAd(versionCode: Int) {
+//    val hookClassName = when (versionCode) {
+//        in 758..796 -> "com.qidian.QDReader.ui.activity.MainGroupActivity\$t"
+//        in 800..850 -> "com.qidian.QDReader.ui.activity.MainGroupActivity\$a"
+//        else -> null
+//    }
+//    hookClassName?.hook {
+//        injectMember {
+//            method {
+//                name = "c"
+//            }
+//            intercept()
+//        }
+//    } ?: loggerE(msg = "移除底部导航栏中心广告不支持的版本号为: $versionCode")
+
+    when (versionCode) {
+        in 758..850 -> {
+            findClass("com.qidian.QDReader.ui.activity.MainGroupActivity").hook {
+                injectMember {
+                    method {
+                        name = "checkAdTab"
+                        emptyParam()
+                        returnType = UnitType
+                    }
+                    intercept()
+                }
             }
-            intercept()
         }
-    } ?: loggerE(msg = "移除底部导航栏中心广告不支持的版本号为: $versionCode")
+
+        else -> loggerE(msg = "移除底部导航栏中心广告不支持的版本号为: $versionCode")
+    }
 }
 
 /**
  * 移除我-中心广告
  */
-fun PackageParam.removeAccountCenterAd(versionCode: Int) {
+fun PackageParam.disableAccountCenterAd(versionCode: Int) {
     when (versionCode) {
         in 758..850 -> {
+            findClass("com.qidian.QDReader.ui.fragment.QDAccountFragment").hook {
+                injectMember {
+                    method {
+                        name = "loadADData"
+                        returnType = UnitType
+                    }
+                    intercept()
+                }
+            }
+
             findClass("com.qidian.QDReader.ui.fragment.QDUserAccountFragment").hook {
                 injectMember {
                     method {
@@ -155,6 +185,7 @@ fun PackageParam.removeAccountCenterAd(versionCode: Int) {
                 }
             }
         }
+
         else -> loggerE(msg = "移除我-中心广告不支持的版本号为: $versionCode")
     }
 }
@@ -223,6 +254,7 @@ fun PackageParam.disableAd(versionCode: Int) {
             // TODO 首页横幅广告:/argus/api/v2/adv/getadvlistbatch
 
         }
+
         else -> loggerE(msg = "禁用广告不支持的版本号为: $versionCode")
     }
 }
@@ -231,14 +263,14 @@ fun PackageParam.disableAd(versionCode: Int) {
  * 禁用检查更新
  * 上级调用:com.qidian.QDReader.ui.activity.MainGroupActivity.onCreate(android.os.Bundle)
  */
-fun PackageParam.removeUpdate(versionCode: Int) {
+fun PackageParam.disableUpdate(versionCode: Int) {
     /**
      * 也可全局搜索 "UpgradeCommon"、"checkUpdate:"
      */
     val neddHookClass = when (versionCode) {
         in 758..788 -> "com.qidian.QDReader.util.z4"
         in 792..796 -> "com.qidian.QDReader.util.i5"
-        in 800..808 -> "com.qidian.QDReader.util.l5"
+        in 800..812 -> "com.qidian.QDReader.util.l5"
         else -> null
     }
     neddHookClass?.hook {
@@ -259,21 +291,26 @@ fun PackageParam.removeUpdate(versionCode: Int) {
         }
     }
 
-    when (versionCode) {
-        in 758..808 -> {
-
-            /**
-             * 上级调用:com.qidian.QDReader.ui.activity.MainGroupActivity.checkUpdate()
-             */
-            findClass("w4.h").hook {
-                injectMember {
-                    method {
-                        name = "l"
-                        returnType = UnitType
-                    }
-                    intercept()
-                }
+    /**
+     * 上级调用:com.qidian.QDReader.ui.activity.MainGroupActivity.checkUpdate()
+     */
+    val neddHookClass2 = when (versionCode) {
+        in 758..808 -> "w4.h"
+        812 -> "t4.h"
+        else -> null
+    }
+    neddHookClass2?.hook {
+        injectMember {
+            method {
+                name = "l"
+                returnType = UnitType
             }
+            intercept()
+        }
+    }
+
+    when (versionCode) {
+        in 758..812 -> {
 
             findClass("com.qidian.QDReader.ui.activity.MainGroupActivity").hook {
                 injectMember {
@@ -335,6 +372,7 @@ fun PackageParam.removeUpdate(versionCode: Int) {
 
             }
         }
+
         else -> loggerE(msg = "禁用检查更新不支持的版本号为: $versionCode")
     }
 }
@@ -344,34 +382,34 @@ fun PackageParam.removeUpdate(versionCode: Int) {
  */
 fun Context.showAdvOptionDialog() {
     val linearLayout = CustomLinearLayout(this, isAutoWidth = false)
-    val enableRemoveBookshelfActivityPopupOption = CustomSwitch(
+    val enableDisableBookshelfActivityPopupOption = CustomSwitch(
         context = this,
-        title = "移除书架活动弹框",
-        isEnable = HookEntry.optionEntity.advOption.enableRemoveBookshelfActivityPopup
+        title = "禁用书架活动弹框",
+        isEnable = HookEntry.optionEntity.advOption.enableDisableBookshelfActivityPopup
     ) {
-        HookEntry.optionEntity.advOption.enableRemoveBookshelfActivityPopup = it
+        HookEntry.optionEntity.advOption.enableDisableBookshelfActivityPopup = it
     }
 
-    val enableRemoveBookshelfFloatOption = CustomSwitch(
+    val enableDisableBookshelfFloatOption = CustomSwitch(
         context = this,
-        title = "移除书架右下角浮窗",
-        isEnable = HookEntry.optionEntity.advOption.enableRemoveBookshelfFloat
+        title = "禁用书架右下角浮窗",
+        isEnable = HookEntry.optionEntity.advOption.enableDisableBookshelfFloat
     ) {
-        HookEntry.optionEntity.advOption.enableRemoveBookshelfFloat = it
+        HookEntry.optionEntity.advOption.enableDisableBookshelfFloat = it
     }
-    val enableRemoveBookshelfBottomAdOption = CustomSwitch(
+    val enableDisableBookshelfBottomAdOption = CustomSwitch(
         context = this,
-        title = "移除底部导航栏中心广告",
-        isEnable = HookEntry.optionEntity.advOption.enableRemoveBookshelfBottomAd
+        title = "禁用底部导航栏中心广告",
+        isEnable = HookEntry.optionEntity.advOption.enableDisableBookshelfBottomAd
     ) {
-        HookEntry.optionEntity.advOption.enableRemoveBookshelfBottomAd = it
+        HookEntry.optionEntity.advOption.enableDisableBookshelfBottomAd = it
     }
-    val enableRemoveAccountCenterAdOption = CustomSwitch(
+    val enableDisableAccountCenterAdOption = CustomSwitch(
         context = this,
-        title = "移除账号中心广告",
-        isEnable = HookEntry.optionEntity.advOption.enableRemoveAccountCenterAd
+        title = "禁用账号中心广告",
+        isEnable = HookEntry.optionEntity.advOption.enableDisableAccountCenterAd
     ) {
-        HookEntry.optionEntity.advOption.enableRemoveAccountCenterAd = it
+        HookEntry.optionEntity.advOption.enableDisableAccountCenterAd = it
     }
     val enableDisableCheckUpdateOption = CustomSwitch(
         context = this,
@@ -380,6 +418,7 @@ fun Context.showAdvOptionDialog() {
     ) {
         HookEntry.optionEntity.advOption.enableDisableCheckUpdate = it
     }
+
     val enableDisableAdvOption = CustomSwitch(
         context = this,
         title = "禁用TX广告",
@@ -387,10 +426,10 @@ fun Context.showAdvOptionDialog() {
     ) {
         HookEntry.optionEntity.advOption.enableDisableAdv = it
     }
-    linearLayout.addView(enableRemoveBookshelfActivityPopupOption)
-    linearLayout.addView(enableRemoveBookshelfFloatOption)
-    linearLayout.addView(enableRemoveBookshelfBottomAdOption)
-    linearLayout.addView(enableRemoveAccountCenterAdOption)
+    linearLayout.addView(enableDisableBookshelfActivityPopupOption)
+    linearLayout.addView(enableDisableBookshelfFloatOption)
+    linearLayout.addView(enableDisableBookshelfBottomAdOption)
+    linearLayout.addView(enableDisableAccountCenterAdOption)
     linearLayout.addView(enableDisableCheckUpdateOption)
     linearLayout.addView(enableDisableAdvOption)
     alertDialog {

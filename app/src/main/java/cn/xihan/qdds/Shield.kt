@@ -40,17 +40,16 @@ fun PackageParam.shieldOption(versionCode: Int, optionValueSet: Set<Int>) {
             8 -> shieldFreeNewBook(versionCode)
             9 -> shieldHotAndRecommend(versionCode)
             10 -> shieldNewBookAndRecommend(versionCode)
-            11 -> shieldNewBookRank(versionCode)
+            11 -> shieldBookRank(versionCode)
             12 -> shieldNewBook(versionCode)
             13 -> shieldDailyReading(versionCode)
         }
     }
-    shieldSearch(versionCode, HookEntry.isEnableOption(1), HookEntry.isEnableOption(2))
+    shieldSearch(versionCode, HookEntry.isEnableShieldOption(1), HookEntry.isEnableShieldOption(2))
 }
 
 /**
  * 屏蔽每日导读指定的书籍
- * @param isNeedShieldAllData
  */
 fun PackageParam.shieldDailyReading(
     versionCode: Int
@@ -89,7 +88,7 @@ fun PackageParam.shieldDailyReading(
  */
 fun PackageParam.shieldChoice(versionCode: Int) {
     when (versionCode) {
-        in 788..808 -> {
+        in 788..812 -> {
             /**
              * 精选主页面
              */
@@ -130,7 +129,7 @@ fun PackageParam.shieldCategory(versionCode: Int) {
                 injectMember {
                     constructor {
                         param(
-                            "com.qidian.QDReader.ui.adapter.x6".clazz,
+                            "com.qidian.QDReader.ui.adapter.x6".toClass(),
                             ContextClass,
                             IntType,
                             ListClass
@@ -148,6 +147,51 @@ fun PackageParam.shieldCategory(versionCode: Int) {
             }
         }
 
+        812 ->{
+            findClass("com.qidian.QDReader.ui.adapter.x6\$a").hook {
+                injectMember {
+                    constructor {
+                        param(
+                            "com.qidian.QDReader.ui.adapter.x6".toClass(),
+                            ContextClass,
+                            IntType,
+                            ListClass
+                        )
+                    }
+                    beforeHook {
+                        val list = args[3] as? MutableList<*>
+                        list?.let {
+                            safeRun {
+                                args(3).set(parseNeedShieldList(it))
+                            }
+                        }
+                    }
+                }
+            }
+
+            /**
+             * 上级调用:com.qidian.QDReader.ui.fragment.LibraryFragment.loadData(boolean) : void
+             */
+            findClass("com.qidian.QDReader.ui.fragment.LibraryFragment\$a").hook {
+                injectMember {
+                    method {
+                        name = "a"
+                        param(IntType, ArrayListClass)
+                        returnType = UnitType
+                    }
+                    beforeHook {
+                        val b = args[1] as? MutableList<*>
+                        b?.let {
+                            safeRun {
+                                args(1).set(parseNeedShieldList(it))
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+
         else -> loggerE(msg = "屏蔽分类不支持的版本号为: $versionCode")
     }
 }
@@ -163,6 +207,7 @@ fun PackageParam.shieldFreeRecommend(versionCode: Int) {
     val freeRecommendHookClass: String? = when (versionCode) {
         788 -> "la.a"
         in 792..808 -> "ka.a"
+        812 -> "ia.a"
         else -> null
     }
     freeRecommendHookClass?.hook {
@@ -170,7 +215,7 @@ fun PackageParam.shieldFreeRecommend(versionCode: Int) {
             method {
                 name = "n"
                 param(
-                    "com.qidian.QDReader.repository.entity.BookStoreDynamicItem".clazz,
+                    "com.qidian.QDReader.repository.entity.BookStoreDynamicItem".toClass(),
                     IntType,
                     IntType
                 )
@@ -313,14 +358,14 @@ fun PackageParam.shieldNewBook(versionCode: Int) {
  */
 fun PackageParam.shieldFreeNewBook(versionCode: Int) {
     when (versionCode) {
-        in 788..808 -> {
+        in 788..812 -> {
             findClass("com.qidian.QDReader.ui.fragment.QDNewBookInStoreFragment").hook {
                 injectMember {
                     method {
                         name = "loadData\$lambda-6"
                         param(
-                            "com.qidian.QDReader.ui.fragment.QDNewBookInStoreFragment".clazz,
-                            "com.qidian.QDReader.repository.entity.NewBookInStore".clazz
+                            "com.qidian.QDReader.ui.fragment.QDNewBookInStoreFragment".toClass(),
+                            "com.qidian.QDReader.repository.entity.NewBookInStore".toClass()
                         )
                     }
                     beforeHook {
@@ -347,8 +392,8 @@ fun PackageParam.shieldFreeNewBook(versionCode: Int) {
                     method {
                         name = "loadData\$lambda-6"
                         param(
-                            "com.qidian.QDReader.ui.activity.QDNewBookInStoreActivity".clazz,
-                            "com.qidian.QDReader.repository.entity.NewBookInStore".clazz
+                            "com.qidian.QDReader.ui.activity.QDNewBookInStoreActivity".toClass(),
+                            "com.qidian.QDReader.repository.entity.NewBookInStore".toClass()
                         )
                     }
                     beforeHook {
@@ -422,7 +467,7 @@ fun PackageParam.shieldNewBookAndRecommend(versionCode: Int) {
                 injectMember {
                     method {
                         name = "r"
-                        param("com.qidian.QDReader.ui.fragment.SanJiangPagerFragment".clazz)
+                        param("com.qidian.QDReader.ui.fragment.SanJiangPagerFragment".toClass())
                         returnType = ListClass
                     }
                     afterHook {
@@ -468,7 +513,7 @@ fun PackageParam.shieldNewBookAndRecommend(versionCode: Int) {
                 injectMember {
                     method {
                         name = "s"
-                        param("com.qidian.QDReader.ui.fragment.SanJiangPagerFragment".clazz)
+                        param("com.qidian.QDReader.ui.fragment.SanJiangPagerFragment".toClass())
                         returnType = ListClass
                     }
                     afterHook {
@@ -509,7 +554,7 @@ fun PackageParam.shieldNewBookAndRecommend(versionCode: Int) {
             }
         }
 
-        in 804..808 -> {
+        in 804..812 -> {
             /**
              *上级调用:com.qidian.QDReader.ui.fragment.SanJiangPagerFragment mAdapter
              */
@@ -563,11 +608,11 @@ fun PackageParam.shieldNewBookAndRecommend(versionCode: Int) {
 }
 
 /**
- * 屏蔽新书排行榜
+ * 屏蔽精选-排行榜
  */
-fun PackageParam.shieldNewBookRank(versionCode: Int) {
+fun PackageParam.shieldBookRank(versionCode: Int) {
     when (versionCode) {
-        808 -> {
+        in 808..812 -> {
             findClass("com.qidian.QDReader.ui.fragment.RankingFragment").hook {
                 injectMember {
                     method {
@@ -576,7 +621,7 @@ fun PackageParam.shieldNewBookRank(versionCode: Int) {
                             BooleanType,
                             BooleanType,
                             IntType,
-                            "com.qidian.QDReader.repository.entity.RankListData".clazz
+                            "com.qidian.QDReader.repository.entity.RankListData".toClass()
                         )
                         returnType = UnitType
                     }
@@ -592,7 +637,8 @@ fun PackageParam.shieldNewBookRank(versionCode: Int) {
 
             }
         }
-        else -> loggerE(msg = "屏蔽新书排行榜不支持的版本号: $versionCode")
+
+        else -> loggerE(msg = "屏蔽排行榜不支持的版本号: $versionCode")
     }
 }
 
@@ -601,7 +647,7 @@ fun PackageParam.shieldNewBookRank(versionCode: Int) {
  */
 fun PackageParam.shieldCategoryAllBook(versionCode: Int) {
     when (versionCode) {
-        in 788..808 -> {
+        in 788..812 -> {
             /**
              * 分类-全部作品
              */
@@ -609,7 +655,7 @@ fun PackageParam.shieldCategoryAllBook(versionCode: Int) {
                 injectMember {
                     method {
                         name = "M"
-                        param("com.qidian.QDReader.ui.activity.BookLibraryActivity".clazz)
+                        param("com.qidian.QDReader.ui.activity.BookLibraryActivity".toClass())
                         returnType = ArrayListClass
                     }
                     beforeHook {
@@ -677,6 +723,7 @@ fun PackageParam.shieldSearch(
         val needHookClass: String? = when (versionCode) {
             788 -> "o9.d"
             in 792..808 -> "n9.d"
+            812 -> "l9.d"
             else -> null
         }
         /**
@@ -708,7 +755,7 @@ fun PackageParam.shieldSearch(
                     injectMember {
                         method {
                             name = "setBookRank"
-                            param("com.qidian.QDReader.repository.entity.search.SearchBookRankBean".clazz)
+                            param("com.qidian.QDReader.repository.entity.search.SearchBookRankBean".toClass())
                         }
                         beforeHook {
                             args[0]?.let {
@@ -730,7 +777,7 @@ fun PackageParam.shieldSearch(
                     injectMember {
                         method {
                             name = "setTagRank"
-                            param("com.qidian.QDReader.repository.entity.search.SearchTagRankBean".clazz)
+                            param("com.qidian.QDReader.repository.entity.search.SearchTagRankBean".toClass())
                         }
                         beforeHook {
                             args[0]?.let {
@@ -798,7 +845,7 @@ fun Context.showShieldOptionDialog() {
             "精选-免费-新书入库",
             "精选-畅销精选、主编力荐等更多",
             "精选-新书强推、三江推荐",
-            "精选-新书强推-新书排行榜",
+            "精选-排行榜",
             "精选-新书",
             "每日导读"
         )

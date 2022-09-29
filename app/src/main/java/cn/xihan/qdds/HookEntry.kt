@@ -4,19 +4,21 @@ import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
-import android.widget.*
+import android.widget.LinearLayout
+import android.widget.RelativeLayout
+import android.widget.TextView
 import cn.xihan.qdds.HookEntry.Companion.NOT_SUPPORT_OLD_LAYOUT_VERSION_CODE
 import cn.xihan.qdds.HookEntry.Companion.optionEntity
 import cn.xihan.qdds.HookEntry.Companion.versionCode
+import com.alibaba.fastjson2.contains
 import com.alibaba.fastjson2.parseObject
 import com.alibaba.fastjson2.toJSONString
 import com.highcapable.yukihookapi.YukiHookAPI
 import com.highcapable.yukihookapi.annotation.xposed.InjectYukiHookWithXposed
 import com.highcapable.yukihookapi.hook.log.loggerE
 import com.highcapable.yukihookapi.hook.param.PackageParam
-import com.highcapable.yukihookapi.hook.type.java.*
+import com.highcapable.yukihookapi.hook.type.java.UnitType
 import com.highcapable.yukihookapi.hook.xposed.proxy.IYukiHookXposedInit
-import de.robv.android.xposed.XposedHelpers.*
 
 
 /**
@@ -62,24 +64,24 @@ class HookEntry : IYukiHookXposedInit {
                 removeQSNYDialog(versionCode)
             }
 
-            if (optionEntity.advOption.enableRemoveBookshelfActivityPopup) {
-                removeBookshelfActivityPopup(versionCode)
+            if (optionEntity.advOption.enableDisableBookshelfActivityPopup) {
+                disableBookshelfActivityPopup(versionCode)
             }
 
-            if (optionEntity.advOption.enableRemoveBookshelfFloat) {
-                removeBookshelfFloatWindow(versionCode)
+            if (optionEntity.advOption.enableDisableBookshelfFloat) {
+                disableBookshelfFloatWindow(versionCode)
             }
 
-            if (optionEntity.advOption.enableRemoveBookshelfBottomAd) {
-                removeBottomNavigationCenterAd(versionCode)
+            if (optionEntity.advOption.enableDisableBookshelfBottomAd) {
+                disableBottomNavigationCenterAd(versionCode)
             }
 
-            if (optionEntity.advOption.enableRemoveAccountCenterAd) {
-                removeAccountCenterAd(versionCode)
+            if (optionEntity.advOption.enableDisableAccountCenterAd) {
+                disableAccountCenterAd(versionCode)
             }
 
             if (optionEntity.advOption.enableDisableCheckUpdate) {
-                removeUpdate(versionCode)
+                disableUpdate(versionCode)
             }
 
             if (optionEntity.advOption.enableDisableAdv) {
@@ -102,14 +104,19 @@ class HookEntry : IYukiHookXposedInit {
                 accountViewHide(versionCode)
             }
 
+            if (optionEntity.viewHideOption.bookDetailOptions.enableHideBookDetail) {
+                bookDetailHide(versionCode)
+            }
+
+
             splashPage(
                 versionCode = versionCode,
                 isEnableSplash = optionEntity.splashOption.enableSplash,
                 isEnableCustomSplash = optionEntity.splashOption.enableCustomSplash
             )
 
-            if (optionList.isNotEmpty()) {
-                shieldOption(versionCode, optionList)
+            if (optionEntity.shieldOption.shieldOptionValueSet.isNotEmpty()) {
+                shieldOption(versionCode, optionEntity.shieldOption.shieldOptionValueSet)
             }
 
             /**
@@ -134,35 +141,35 @@ class HookEntry : IYukiHookXposedInit {
              * 调试-查看跳转关键词
              */
             /*
-            findClass("com.qidian.QDReader.other.ActionUrlProcess").hook {
-                /*
-                injectMember {
-                    method {
-                        name = "processOpenBookListReborn"
-                        param(ContextClass, JSONObjectClass)
-                    }
-                    afterHook {
-                        printCallStack(instanceClass.name)
-                        val s = args[1] as? JSONObject
-                        loggerE(msg = "s: $s")
-                    }
-                }
+                        findClass("com.qidian.QDReader.other.ActionUrlProcess").hook {
+                            /*
+                            injectMember {
+                                method {
+                                    name = "processOpenBookListReborn"
+                                    param(ContextClass, JSONObjectClass)
+                                }
+                                afterHook {
+                                    printCallStack(instanceClass.name)
+                                    val s = args[1] as? JSONObject
+                                    loggerE(msg = "s: $s")
+                                }
+                            }
 
-                 */
+                             */
 
-                injectMember {
-                    method {
-                        name = "processSinceV650"
-                        param(ContextClass, StringType, JSONObjectClass)
-                    }
-                    afterHook {
-                        //printCallStack(instance.javaClass.name)
-                        val s = args[1] as? String
-                        val jb = args[2] as? JSONObject
-                        loggerE(msg = "s: $s\njb: $jb")
-                    }
-                }
-            }
+                            injectMember {
+                                method {
+                                    name = "processSinceV650"
+                                    param(ContextClass, StringType, JSONObjectClass)
+                                }
+                                afterHook {
+                                    //printCallStack(instance.javaClass.name)
+                                    val s = args[1] as? String
+                                    val jb = args[2] as? JSONObject
+                                    loggerE(msg = "s: $s\njb: $jb")
+                                }
+                            }
+                        }
 
              */
 
@@ -261,7 +268,7 @@ class HookEntry : IYukiHookXposedInit {
                     afterHook {
                         val s = args[3] as? String
                         if (!s.isNullOrBlank()) {
-                            loggerE(msg = "data: $s")
+                            loggerE(msg = "5 data: $s")
                         }
                     }
 
@@ -274,12 +281,11 @@ class HookEntry : IYukiHookXposedInit {
                     afterHook {
                         val s = args[2] as? String
                         if (!s.isNullOrBlank()) {
-                            loggerE(msg = "data: $s")
+                            loggerE(msg = "3 data: $s")
                         }
                     }
                 }
             }
-
              */
 
 
@@ -324,22 +330,23 @@ class HookEntry : IYukiHookXposedInit {
             optionEntity.shieldOption.bookTypeList
         }
 
-        /**
-         * 配置相关的选项
-         */
-        val optionList by lazy {
-            optionEntity.shieldOption.shieldOptionValueSet
-        }
-
         private val enableBookTypeEnhancedBlocking by lazy {
             optionEntity.shieldOption.enableBookTypeEnhancedBlocking
         }
 
         /**
-         * 判断是否启用了该选项
+         * 判断是否启用了屏蔽配置的选项
          * @param optionValue 选项的值
          */
-        fun isEnableOption(optionValue: Int) = optionList.any { it == optionValue }
+        fun isEnableShieldOption(optionValue: Int) =
+            optionValue in optionEntity.shieldOption.shieldOptionValueSet
+
+        /**
+         * 判断是否启用了书籍详情配置的选项
+         */
+        fun isEnableBookDetailOption(optionValue: Int) =
+            optionEntity.viewHideOption.bookDetailOptions.configurationsOptionList[optionValue] in optionEntity.viewHideOption.bookDetailOptions.configurationsSelectedOptionList
+
 
         /**
          * 判断是否需要屏蔽
@@ -350,9 +357,12 @@ class HookEntry : IYukiHookXposedInit {
         fun isNeedShield(
             bookName: String? = null, authorName: String? = null, bookType: Set<String>? = null
         ): Boolean {
+            /*
             if (BuildConfig.DEBUG) {
                 loggerE(msg = "bookName: $bookName\nauthorName:$authorName\nbookType:$bookType")
             }
+
+             */
             if (bookNameList.isNotEmpty()) {
                 if (!bookName.isNullOrBlank() && bookNameList.any { it in bookName }) {
                     return true
@@ -467,7 +477,7 @@ fun PackageParam.autoSignIn(
  */
 fun PackageParam.oldAutoSignIn(versionCode: Int) {
     when (versionCode) {
-        in 758..808 -> {
+        in 758..800 -> {
             findClass("com.qidian.QDReader.ui.view.bookshelfview.CheckInReadingTimeView").hook {
                 injectMember {
                     method {
@@ -499,7 +509,7 @@ fun PackageParam.oldAutoSignIn(versionCode: Int) {
  */
 fun PackageParam.newAutoSignIn(versionCode: Int) {
     when (versionCode) {
-        in 758..808 -> {
+        in 758..812 -> {
             findClass("com.qidian.QDReader.ui.view.bookshelfview.CheckInReadingTimeViewNew").hook {
                 injectMember {
                     method {
@@ -573,6 +583,22 @@ fun PackageParam.enableLocalCard(versionCode: Int) {
                     replaceTo(1)
                 }
             }
+
+            findClass("com.qidian.QDReader.repository.entity.config.MemberBean").hook {
+                injectMember {
+                    method {
+                        name = "getMemberType"
+                    }
+                    replaceTo(2)
+                }
+
+                injectMember {
+                    method {
+                        name = "isMember"
+                    }
+                    replaceTo(1)
+                }
+            }
         }
 
         else -> loggerE(msg = "启用本地至尊卡不支持的版本号为: $versionCode")
@@ -581,7 +607,6 @@ fun PackageParam.enableLocalCard(versionCode: Int) {
 
 /**
  * 主要配置弹框
- * @param mainOption 配置模型
  */
 fun Context.showMainOptionDialog() {
     val linearLayout = CustomLinearLayout(this, isAutoWidth = false)

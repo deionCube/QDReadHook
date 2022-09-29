@@ -36,32 +36,32 @@ data class OptionEntity(
 ) {
     /**
      * 广告配置
-     * @param enableRemoveBookshelfActivityPopup 开启移除书架活动弹框
-     * @param enableRemoveBookshelfFloat 开启移除书架浮窗
-     * @param enableRemoveBookshelfBottomAd 开启移除书架底部导航栏广告
-     * @param enableRemoveAccountCenterAd 开启移除我-中间广告
-     * @param enableDisableCheckUpdate 开启禁止检查更新
-     * @param enableDisableAdv 开启禁止广告
+     * @param enableDisableBookshelfActivityPopup 启用移除书架活动弹框
+     * @param enableDisableBookshelfFloat 启用禁用书架浮窗
+     * @param enableDisableBookshelfBottomAd 启用禁用书架底部导航栏广告
+     * @param enableDisableAccountCenterAd 启用移除我-中间广告
+     * @param enableDisableCheckUpdate 启用禁止检查更新
+     * @param enableDisableAdv 启用禁止广告
      */
     @Keep
     @Serializable
     data class AdvOption(
-        @SerialName("enableRemoveBookshelfActivityPopup") var enableRemoveBookshelfActivityPopup: Boolean = false,
+        @SerialName("enableDisableBookshelfActivityPopup") var enableDisableBookshelfActivityPopup: Boolean = false,
         @SerialName("enableDisableAdv") var enableDisableAdv: Boolean = false,
         @SerialName("enableDisableCheckUpdate") var enableDisableCheckUpdate: Boolean = false,
-        @SerialName("enableRemoveAccountCenterAd") var enableRemoveAccountCenterAd: Boolean = false,
-        @SerialName("enableRemoveBookshelfBottomAd") var enableRemoveBookshelfBottomAd: Boolean = false,
-        @SerialName("enableRemoveBookshelfFloat") var enableRemoveBookshelfFloat: Boolean = false
+        @SerialName("enableDisableAccountCenterAd") var enableDisableAccountCenterAd: Boolean = false,
+        @SerialName("enableDisableBookshelfBottomAd") var enableDisableBookshelfBottomAd: Boolean = false,
+        @SerialName("enableDisableBookshelfFloat") var enableDisableBookshelfFloat: Boolean = false
     )
 
     /**
      * 主配置
      * @param packageName 包名
-     * @param enableAutoSign 是否开启自动签到
-     * @param enableOldLayout 是否开启旧版布局
-     * @param enableLocalCard 是否开启本地至尊卡
-     * @param enableHideBottomDot 是否开启隐藏底部小红点
-     * @param enableDisableQSNModeDialog 是否开启关闭青少年模式弹框
+     * @param enableAutoSign 启用自动签到
+     * @param enableOldLayout 启用旧版布局
+     * @param enableLocalCard 启用本地至尊卡
+     * @param enableHideBottomDot 启用隐藏底部小红点
+     * @param enableDisableQSNModeDialog 启用关闭青少年模式弹框
      */
     @Keep
     @Serializable
@@ -94,9 +94,9 @@ data class OptionEntity(
 
     /**
      * 闪屏页配置
-     * @param enableSplash 是否开启闪屏页
-     * @param enableCustomSplash 是否开启自定义闪屏页
-     * @param enableCustomSplashAllButton 是否开启自定义闪屏页全部按钮
+     * @param enableSplash 启用闪屏页
+     * @param enableCustomSplash 启用自定义闪屏页
+     * @param enableCustomSplashAllButton 启用自定义闪屏页全部按钮
      * @param customBookId 自定义闪屏页书籍id
      * @param customSplashType 自定义闪屏页类型
      * @param customSplashImageFilePath 自定义闪屏页图片路径
@@ -114,10 +114,11 @@ data class OptionEntity(
 
     /**
      * 控件隐藏配置
-     * @param enableHideBookshelfDailyReading 开启隐藏书架每日导读
-     * @param enableHideMainBottomNavigationBarFind 开启隐藏主页底部导航栏发现
-     * @param enableSearchHideAllView 开启隐藏搜索全部控件
+     * @param enableHideBookshelfDailyReading 启用隐藏书架每日导读
+     * @param enableHideMainBottomNavigationBarFind 启用隐藏主页底部导航栏发现
+     * @param enableSearchHideAllView 启用隐藏搜索全部控件
      * @param accountOption 用户页面配置
+     * @param bookDetailOptions 书籍详情配置
      */
     @Keep
     @Serializable
@@ -125,12 +126,13 @@ data class OptionEntity(
         @SerialName("enableHideBookshelfDailyReading") var enableHideBookshelfDailyReading: Boolean = false,
         @SerialName("enableHideMainBottomNavigationBarFind") var enableHideMainBottomNavigationBarFind: Boolean = false,
         @SerialName("enableSearchHideAllView") var enableSearchHideAllView: Boolean = false,
-        @SerialName("AccountOption") var accountOption: AccountOption = AccountOption()
+        @SerialName("AccountOption") var accountOption: AccountOption = AccountOption(),
+        @SerialName("BookDetailOptions") var bookDetailOptions: BookDetailOptions = BookDetailOptions()
     ) {
 
         /**
          * 用户页面配置
-         * @param enableHideAccount 是否开启隐藏用户页面
+         * @param enableHideAccount 启用开启隐藏用户页面
          * @param configurationsOptionList 可用配置集合
          * @param configurationsSelectedOptionList 已选配置集合
          */
@@ -141,6 +143,32 @@ data class OptionEntity(
             @SerialName("configurationsOptionList") var configurationsOptionList: MutableSet<String> = mutableSetOf(),
             @SerialName("configurationsSelectedOptionList") var configurationsSelectedOptionList: MutableSet<String> = mutableSetOf()
         )
+
+        /**
+         * 书籍详情页面配置
+         * @param enableHideBookDetail 启用隐藏书籍详情页面
+         * @param configurationsOptionList 可用配置集合
+         * @param configurationsSelectedOptionList 已选配置集合
+         */
+        @Keep
+        @Serializable
+        data class BookDetailOptions(
+            @SerialName("enableHideBookDetail") var enableHideBookDetail: Boolean = false,
+            @SerialName("configurationsOptionList") var configurationsOptionList: List<String> = listOf(
+                "出圈指数",
+                "荣誉标签",
+                "QQ群",
+                "书友圈",
+                "书友榜",
+                "月票金主",
+                "本书看点|中心广告",
+                "浮窗广告",
+                "同类作品推荐",
+                "看过此书的人还看过"
+            ),
+            @SerialName("configurationsSelectedOptionList") var configurationsSelectedOptionList: MutableSet<String> = mutableSetOf()
+        )
+
 
     }
 }
@@ -189,13 +217,14 @@ fun readOptionFile(): File? {
 /**
  * 写入配置文件
  */
-fun writeOptionFile(optionEntity: OptionEntity) {
+fun writeOptionFile(optionEntity: OptionEntity): Boolean =
     try {
         readOptionFile()?.writeText(Json.encodeToString(optionEntity))
+        true
     } catch (e: Exception) {
         loggerE(msg = "writeOptionFile: ${e.message}")
+        false
     }
-}
 
 /**
  * 返回一个默认的配置模型
@@ -209,9 +238,9 @@ fun defaultOptionEntity(): OptionEntity = OptionEntity(
         enableHideBottomDot = true,
         enableDisableQSNModeDialog = true
     ), advOption = OptionEntity.AdvOption(
-        enableRemoveBookshelfFloat = true,
-        enableRemoveBookshelfBottomAd = true,
-        enableRemoveAccountCenterAd = true,
+        enableDisableBookshelfFloat = true,
+        enableDisableBookshelfBottomAd = true,
+        enableDisableAccountCenterAd = true,
         enableDisableCheckUpdate = true,
         enableDisableAdv = true
     ), shieldOption = OptionEntity.ShieldOption(
@@ -240,9 +269,4 @@ fun defaultOptionEntity(): OptionEntity = OptionEntity(
 /**
  * 更新配置
  */
-fun updateOptionEntity(): Boolean = try {
-    writeOptionFile(HookEntry.optionEntity)
-    true
-} catch (e: Exception) {
-    false
-}
+fun updateOptionEntity(): Boolean = writeOptionFile(HookEntry.optionEntity)
