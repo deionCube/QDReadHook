@@ -3,13 +3,21 @@ package cn.xihan.qdds
 import android.app.Activity
 import android.content.ComponentName
 import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
+import android.net.Uri
 import android.os.Build
 import android.os.Environment
+import android.os.Looper
 import android.view.View
 import com.highcapable.yukihookapi.hook.log.loggerE
 import de.robv.android.xposed.XposedHelpers
+import org.json.JSONObject
+import java.io.BufferedReader
 import java.io.File
+import java.io.InputStreamReader
+import java.net.HttpURLConnection
+import java.net.URL
 import kotlin.system.exitProcess
 
 /**
@@ -20,24 +28,18 @@ import kotlin.system.exitProcess
  */
 /**
  * 通过反射获取控件
- * @param param 参数
  * @param name 字段名
  */
 @Throws(NoSuchFieldException::class, IllegalAccessException::class)
-inline fun <reified T : View> getView(param: Any, name: String): T? {
-    return getParam<T>(param, name)
-}
+inline fun <reified T : View> Any.getView(name: String): T? = getParam<T>(name)
 
 /**
  * 反射获取任何类型
  */
 @Throws(NoSuchFieldException::class, IllegalAccessException::class)
-inline fun <reified T> getParam(param: Any, name: String): T? {
-    val clazz: Class<*> = param.javaClass
-    val field = clazz.getDeclaredField(name)
-    field.isAccessible = true
-    return field[param] as? T
-}
+inline fun <reified T> Any.getParam(name: String): T? = javaClass.getDeclaredField(name).apply {
+    isAccessible = true
+}[this] as? T
 
 /**
  * 利用 Reflection 获取当前的系统 Context
@@ -119,7 +121,8 @@ fun String.write(fileName: String = "test") {
     // 如果文件名已存在 则文件名 + 1
     var index = 0
     while (File(
-            "${Environment.getExternalStorageDirectory().path}/MT2/apks/起点", "$fileName-$index.txt"
+            "${Environment.getExternalStorageDirectory().path}/MT2/apks/起点",
+            "$fileName-$index.txt"
         ).exists()
     ) {
         index++
@@ -151,7 +154,6 @@ fun Context.dp2px(dp: Float): Int {
     return (dp * scale + 0.5f).toInt()
 }
 
-
 /**
  * 隐藏应用图标
  */
@@ -179,3 +181,69 @@ fun Activity.showAppIcon() {
         )
     }
 }
+
+/**
+ * 检查模块更新
+ */
+@Throws(Exception::class)
+fun Context.checkModuleUpdate() {
+    // 创建一个子线程
+    Thread {
+        Looper.prepare()
+        // Java 原生网络请求
+        val url = URL("https://api.github.com/repos/xihan123/QDReadHook/releases/latest")
+        val connection = url.openConnection() as HttpURLConnection
+        connection.apply {
+            requestMethod = "GET"
+            connectTimeout = 5000
+            readTimeout = 5000
+            doInput = true
+            useCaches = false
+            setRequestProperty("Content-Type", "application/json")
+            setRequestProperty("Accept", "application/json")
+            setRequestProperty(
+                "User-Agent",
+                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.114 Safari/537.36"
+            )
+        }
+        try {
+            connection.connect()
+            if (connection.responseCode == 200) {
+                val inputStream = connection.inputStream
+                val bufferedReader = BufferedReader(InputStreamReader(inputStream))
+                val stringBuilder = StringBuilder()
+                bufferedReader.forEachLine {
+                    stringBuilder.append(it)
+                }
+                val jsonObject = JSONObject(stringBuilder.toString())
+                val versionName = jsonObject.getString("tag_name")
+                val downloadUrl = jsonObject.getJSONArray("assets").getJSONObject(0)
+                    .getString("browser_download_url")
+                val releaseNote = jsonObject.getString("body")
+                if (versionName != BuildConfig.VERSION_NAME) {
+                    alertDialog {
+                        title = "发现新版本: $versionName"
+                        message = "更新内容:\n$releaseNote"
+                        positiveButton("下载更新") {
+                            startActivity(Intent(Intent.ACTION_VIEW).also {
+                                it.data = Uri.parse(downloadUrl)
+                            })
+                        }
+                        negativeButton("返回") {
+                            it.dismiss()
+                        }
+                        build()
+                        show()
+                    }
+                }
+            }
+        } catch (e: Exception) {
+            loggerE(msg = "checkModuleUpdate 报错: ${e.message}")
+        } finally {
+            connection.disconnect()
+        }
+        Looper.loop()
+    }.start()
+}
+
+

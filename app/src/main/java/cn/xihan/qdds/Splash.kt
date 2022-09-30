@@ -59,7 +59,7 @@ fun PackageParam.disableSplash(versionCode: Int) {
                         param(StringType)
                     }
                     afterHook {
-                        val mSplashHelper = getParam<Any>(instance, "mSplashHelper")
+                        val mSplashHelper = instance.getParam<Any>("mSplashHelper")
                         mSplashHelper?.current {
                             method {
                                 name = "e"
@@ -95,14 +95,14 @@ fun PackageParam.enableCustomSplash(
                             returnType = UnitType
                         }
                         afterHook {
-                            val btnSkip = getView<Button>(instance, "btnSkip")
+                            val btnSkip = instance.getView<Button>("btnSkip")
                             btnSkip?.visibility = View.GONE
-                            val ivTop = getView<ImageView>(instance, "ivTop")
+                            val ivTop = instance.getView<ImageView>("ivTop")
                             ivTop?.visibility = View.GONE
-                            val layoutShadow = getParam<RelativeLayout>(instance, "layoutShadow")
+                            val layoutShadow = instance.getParam<RelativeLayout>("layoutShadow")
                             layoutShadow?.visibility = View.GONE
                             val mGotoActivityShimmer =
-                                getView<FrameLayout>(instance, "mGotoActivityShimmer")
+                                instance.getView<FrameLayout>("mGotoActivityShimmer")
                             mGotoActivityShimmer?.visibility = View.GONE
                         }
                     }

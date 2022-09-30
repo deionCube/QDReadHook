@@ -82,7 +82,7 @@ fun PackageParam.hideSearchAllView(versionCode: Int) {
 }
 
 /**
- * 隐藏底部小红点
+ * 隐藏底部导航栏红点
  * 上级调用位置:com.qidian.QDReader.ui.widget.maintab.PagerSlidingTabStrip.s()
  */
 fun PackageParam.hideBottomRedDot(versionCode: Int) {
@@ -99,7 +99,7 @@ fun PackageParam.hideBottomRedDot(versionCode: Int) {
             }
             replaceTo(1)
         }
-    } ?: loggerE(msg = "隐藏底部小红点不支持的版本号为: $versionCode")
+    } ?: loggerE(msg = "隐藏底部导航栏红点不支持的版本号为: $versionCode")
 }
 
 /**
@@ -116,7 +116,7 @@ fun PackageParam.hideBottomNavigationFind(versionCode: Int) {
                         returnType = UnitType
                     }
                     afterHook {
-                        val i = getView<LinearLayout>(instance, "i")
+                        val i = instance.getView<LinearLayout>("i")
                         i?.let {
                             val view = it.getChildAt(2)
                             view?.visibility = View.GONE
@@ -133,7 +133,9 @@ fun PackageParam.hideBottomNavigationFind(versionCode: Int) {
 /**
  * 我-隐藏控件
  */
-fun PackageParam.accountViewHide(versionCode: Int) {
+fun PackageParam.accountViewHide(
+    versionCode: Int
+) {
     when (versionCode) {
         in 792..808 -> {
             /**
@@ -148,7 +150,7 @@ fun PackageParam.accountViewHide(versionCode: Int) {
                     }
                     beforeHook {
                         args[0]?.let {
-                            val items = getParam<MutableList<*>>(it, "Items")
+                            val items = it.getParam<MutableList<*>>("Items")
                             items?.let { list ->
                                 safeRun {
                                     val iterator = list.iterator()
@@ -178,6 +180,7 @@ fun PackageParam.accountViewHide(versionCode: Int) {
                 }
             }
         }
+
         812 -> {
             findClass("com.qidian.QDReader.ui.fragment.QDUserAccountFragment").hook {
                 injectMember {
@@ -188,7 +191,7 @@ fun PackageParam.accountViewHide(versionCode: Int) {
                     }
                     beforeHook {
                         args[0]?.let {
-                            val items = getParam<MutableList<*>>(it, "Items")
+                            val items = it.getParam<MutableList<*>>("Items")
                             items?.let { list ->
                                 safeRun {
                                     val iterator = list.iterator()
@@ -220,6 +223,28 @@ fun PackageParam.accountViewHide(versionCode: Int) {
         }
 
         else -> loggerE(msg = "我-隐藏控件不支持的版本号: $versionCode")
+    }
+}
+
+/**
+ * 隐藏我-右上角消息红点
+ */
+fun PackageParam.accountRightTopRedDot(versionCode: Int) {
+    when (versionCode) {
+        812 -> {
+            findClass("com.qidian.QDReader.component.config.QDAppConfigHelper").hook {
+                injectMember {
+                    method {
+                        name = "F0"
+                        emptyParam()
+                        returnType = BooleanType
+                    }
+                    replaceToFalse()
+                }
+            }
+        }
+
+        else -> loggerE(msg = "我-右上角消息红点不支持的版本号: $versionCode")
     }
 }
 
@@ -309,17 +334,17 @@ fun PackageParam.bookDetailHide(
                         returnType = UnitType
                     }
                     beforeHook {
-                        val mBookDetail = getParam<Any>(instance, "mBookDetail")
+                        val mBookDetail = instance.getParam<Any>("mBookDetail")
                         mBookDetail?.let {
 
-                            val baseBookInfo = getParam<Any>(it, "baseBookInfo")
+                            val baseBookInfo = it.getParam<Any>("baseBookInfo")
                             baseBookInfo?.let {
                                 /**
                                  * 荣誉标签
                                  */
                                 if (isNeedHideRybq) {
                                     val honorTagList =
-                                        getParam<MutableList<*>>(baseBookInfo, "honorTagList")
+                                        baseBookInfo.getParam<MutableList<*>>("honorTagList")
                                     honorTagList?.clear()
                                 }
 
@@ -328,7 +353,7 @@ fun PackageParam.bookDetailHide(
                                  */
                                 if (isNeedHideYpjz) {
                                     val monthTopUser =
-                                        getParam<MutableList<*>>(baseBookInfo, "monthTopUser")
+                                        baseBookInfo.getParam<MutableList<*>>("monthTopUser")
                                     monthTopUser?.clear()
                                 }
 
@@ -338,7 +363,7 @@ fun PackageParam.bookDetailHide(
                              * QQ群
                              */
                             if (isNeedHideQqGroups) {
-                                val qqGroup = getParam<MutableList<*>>(it, "qqGroup")
+                                val qqGroup = it.getParam<MutableList<*>>("qqGroup")
                                 qqGroup?.clear()
                             }
 
@@ -346,7 +371,7 @@ fun PackageParam.bookDetailHide(
                              * 同类作品推荐
                              */
                             if (isNeedHideBookRecommend) {
-                                val sameRecommend = getParam<MutableList<*>>(it, "sameRecommend")
+                                val sameRecommend = it.getParam<MutableList<*>>("sameRecommend")
                                 sameRecommend?.clear()
                             }
 
@@ -355,7 +380,7 @@ fun PackageParam.bookDetailHide(
                              */
                             if (isNeedHideBookRecommend2) {
                                 val bookFriendsRecommend =
-                                    getParam<MutableList<*>>(it, "bookFriendsRecommend")
+                                    it.getParam<MutableList<*>>("bookFriendsRecommend")
                                 bookFriendsRecommend?.clear()
                             }
 
@@ -477,10 +502,10 @@ fun Context.showHideOptionDialog() {
     }
     val enableHideBottomDotOption = CustomSwitch(
         context = this,
-        title = "隐藏底部小红点",
-        isEnable = HookEntry.optionEntity.mainOption.enableHideBottomDot
+        title = "隐藏底部导航栏红点",
+        isEnable = HookEntry.optionEntity.viewHideOption.enableHideMainBottomNavigationRedDot
     ) {
-        HookEntry.optionEntity.mainOption.enableHideBottomDot = it
+        HookEntry.optionEntity.viewHideOption.enableHideMainBottomNavigationRedDot = it
     }
     val mainBottomNavigationBarFindOptionSwitch = CustomSwitch(
         context = this,
@@ -492,11 +517,18 @@ fun Context.showHideOptionDialog() {
     val enableDisableQSNModeDialogOption = CustomSwitch(
         context = this,
         title = "关闭青少年模式弹框",
-        isEnable = HookEntry.optionEntity.mainOption.enableDisableQSNModeDialog
+        isEnable = HookEntry.optionEntity.viewHideOption.enableDisableQSNModeDialog
     ) {
-        HookEntry.optionEntity.mainOption.enableDisableQSNModeDialog = it
+        HookEntry.optionEntity.viewHideOption.enableDisableQSNModeDialog = it
     }
-    val accountViewHideOptionSwitch = CustomSwitch(
+    val accountViewHideRightTopRedDotSwitchOption = CustomSwitch(
+        context = this,
+        title = "隐藏我-右上角消息红点",
+        isEnable = HookEntry.optionEntity.viewHideOption.accountOption.enableHideAccountRightTopRedDot
+    ) {
+        HookEntry.optionEntity.viewHideOption.accountOption.enableHideAccountRightTopRedDot = it
+    }
+    val accountViewHideOptionSwitchOption = CustomSwitch(
         context = this,
         title = "启用我-隐藏控件",
         isEnable = HookEntry.optionEntity.viewHideOption.accountOption.enableHideAccount
@@ -576,7 +608,8 @@ fun Context.showHideOptionDialog() {
     linearLayout.addView(enableHideBottomDotOption)
     linearLayout.addView(mainBottomNavigationBarFindOptionSwitch)
     linearLayout.addView(enableDisableQSNModeDialogOption)
-    linearLayout.addView(accountViewHideOptionSwitch)
+    linearLayout.addView(accountViewHideRightTopRedDotSwitchOption)
+    linearLayout.addView(accountViewHideOptionSwitchOption)
     linearLayout.addView(customTextView)
     linearLayout.addView(bookDetailHideOptionSwitch)
     linearLayout.addView(bookDetailHideOptionList)

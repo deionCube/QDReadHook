@@ -10,7 +10,6 @@ import android.widget.TextView
 import cn.xihan.qdds.HookEntry.Companion.NOT_SUPPORT_OLD_LAYOUT_VERSION_CODE
 import cn.xihan.qdds.HookEntry.Companion.optionEntity
 import cn.xihan.qdds.HookEntry.Companion.versionCode
-import com.alibaba.fastjson2.contains
 import com.alibaba.fastjson2.parseObject
 import com.alibaba.fastjson2.toJSONString
 import com.highcapable.yukihookapi.YukiHookAPI
@@ -56,14 +55,6 @@ class HookEntry : IYukiHookXposedInit {
                 enableLocalCard(versionCode)
             }
 
-            if (optionEntity.mainOption.enableHideBottomDot) {
-                hideBottomRedDot(versionCode)
-            }
-
-            if (optionEntity.mainOption.enableDisableQSNModeDialog) {
-                removeQSNYDialog(versionCode)
-            }
-
             if (optionEntity.advOption.enableDisableBookshelfActivityPopup) {
                 disableBookshelfActivityPopup(versionCode)
             }
@@ -96,8 +87,20 @@ class HookEntry : IYukiHookXposedInit {
                 hideSearchAllView(versionCode)
             }
 
+            if (optionEntity.viewHideOption.enableHideMainBottomNavigationRedDot) {
+                hideBottomRedDot(versionCode)
+            }
+
+            if (optionEntity.viewHideOption.enableDisableQSNModeDialog) {
+                removeQSNYDialog(versionCode)
+            }
+
             if (optionEntity.viewHideOption.enableHideMainBottomNavigationBarFind) {
                 hideBottomNavigationFind(versionCode)
+            }
+
+            if (optionEntity.viewHideOption.accountOption.enableHideAccountRightTopRedDot) {
+                accountRightTopRedDot(versionCode)
             }
 
             if (optionEntity.viewHideOption.accountOption.enableHideAccount) {
@@ -183,7 +186,7 @@ class HookEntry : IYukiHookXposedInit {
                     afterHook {
                         safeRun {
                             val readMoreSetting =
-                                getView<RelativeLayout>(instance, "readMoreSetting")
+                                instance.getView<RelativeLayout>("readMoreSetting")
                             // 获取 readMoreSetting 子控件
                             val readMoreSettingChild = readMoreSetting?.getChildAt(0) as? TextView
                             readMoreSettingChild?.text = "阅读设置/模块设置(长按)"
@@ -347,7 +350,6 @@ class HookEntry : IYukiHookXposedInit {
         fun isEnableBookDetailOption(optionValue: Int) =
             optionEntity.viewHideOption.bookDetailOptions.configurationsOptionList[optionValue] in optionEntity.viewHideOption.bookDetailOptions.configurationsSelectedOptionList
 
-
         /**
          * 判断是否需要屏蔽
          * @param bookName 书名-可空
@@ -391,23 +393,10 @@ class HookEntry : IYukiHookXposedInit {
          * 解析关键词组
          * @param it 关键词组
          */
-        fun parseKeyWordOption(it: String = ""): List<String> {
-            return try {
-                if (it.isBlank()) {
-                    emptyList()
-                } else if (it.contains(";")) {
-                    if (it.endsWith(";")) {
-                        it.substring(0, it.length - 1).split(";").toList()
-                    } else {
-                        it.split(";").toList()
-                    }
-                } else {
-                    listOf(it)
-                }
-            } catch (e: Exception) {
-                emptyList()
-            }
-        }
+        fun parseKeyWordOption(it: String = ""): Set<String> = it.split(";")
+            .filter { it.isNotBlank() }
+            .map { it.replace(Regex("\\s+"), "") }
+            .toSet()
 
         /**
          * 解析需要屏蔽的书籍列表
@@ -484,11 +473,11 @@ fun PackageParam.oldAutoSignIn(versionCode: Int) {
                         name = "S"
                     }
                     afterHook {
-                        val m = getView<TextView>(
-                            instance, "m"
+                        val m = instance.getView<TextView>(
+                            "m"
                         )
-                        val l = getView<LinearLayout>(
-                            instance, "l"
+                        val l = instance.getView<LinearLayout>(
+                            "l"
                         )
                         m?.let { mtv ->
                             if (mtv.text == "签到" || mtv.text == "签到领奖") {
@@ -516,15 +505,15 @@ fun PackageParam.newAutoSignIn(versionCode: Int) {
                         name = "E"
                     }
                     afterHook {
-                        val s = getView<LinearLayout>(
-                            instance, "s"
+                        val s = instance.getView<LinearLayout>(
+                            "s"
                         )
-                        val qd = getParam<Any>(
-                            instance, "s"
+                        val qd = instance.getParam<Any>(
+                            "s"
                         )
                         qd?.let { qdv ->
-                            val e = getView<TextView>(
-                                qdv, "e"
+                            val e = qdv.getView<TextView>(
+                                "e"
                             )
                             e?.let { etv ->
                                 if (etv.text == "签到") {

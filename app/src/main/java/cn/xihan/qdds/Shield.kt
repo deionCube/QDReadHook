@@ -99,7 +99,7 @@ fun PackageParam.shieldChoice(versionCode: Int) {
                         returnType = ListClass
                     }
                     afterHook {
-                        val list = getParam<MutableList<*>>(instance, "items")
+                        val list = instance.getParam<MutableList<*>>("items")
                         list?.let {
                             safeRun {
                                 result = parseNeedShieldList(it)
@@ -147,7 +147,7 @@ fun PackageParam.shieldCategory(versionCode: Int) {
             }
         }
 
-        812 ->{
+        812 -> {
             findClass("com.qidian.QDReader.ui.adapter.x6\$a").hook {
                 injectMember {
                     constructor {
@@ -221,7 +221,7 @@ fun PackageParam.shieldFreeRecommend(versionCode: Int) {
                 )
             }
             beforeHook {
-                val item = args[0]?.let { getParam<ArrayList<*>>(it, "BookList") }
+                val item = args[0]?.getParam<ArrayList<*>>("BookList")
                 item?.let {
                     safeRun {
                         parseNeedShieldList(it)
@@ -251,50 +251,50 @@ fun PackageParam.shieldNewBook(versionCode: Int) {
                     }
                     afterHook {
                         safeRun {
-                            val goldRecBean = getParam<Any>(instance, "goldRecBean")
+                            val goldRecBean = instance.getParam<Any>("goldRecBean")
                             goldRecBean?.let {
-                                val items = getParam<MutableList<*>>(goldRecBean, "items")
+                                val items = goldRecBean.getParam<MutableList<*>>("items")
                                 items?.let {
                                     parseNeedShieldList(items)
                                 }
                             }
                             val bookShortageBean =
-                                getParam<Any>(instance, "bookShortageBean")
+                                instance.getParam<Any>("bookShortageBean")
                             bookShortageBean?.let {
-                                val items = getParam<MutableList<*>>(bookShortageBean, "items")
+                                val items = bookShortageBean.getParam<MutableList<*>>("items")
                                 items?.let {
                                     parseNeedShieldList(items)
                                 }
                             }
 
                             val monthBannerListBean =
-                                getParam<Any>(instance, "monthBannerListBean")
+                                instance.getParam<Any>("monthBannerListBean")
                             monthBannerListBean?.let {
                                 val items =
-                                    getParam<MutableList<*>>(monthBannerListBean, "items")
+                                    monthBannerListBean.getParam<MutableList<*>>("items")
                                 items?.let {
                                     parseNeedShieldList(items)
                                 }
                             }
                             val newBookAIRecommendBean =
-                                getParam<Any>(instance, "newBookAIRecommendBean")
+                                instance.getParam<Any>("newBookAIRecommendBean")
                             newBookAIRecommendBean?.let {
                                 val items =
-                                    getParam<MutableList<*>>(newBookAIRecommendBean, "items")
+                                    newBookAIRecommendBean.getParam<MutableList<*>>("items")
                                 items?.let {
                                     parseNeedShieldList(items)
                                 }
                             }
                             val newBookRankBean =
-                                getParam<Any>(instance, "newBookRankBean")
+                                instance.getParam<Any>("newBookRankBean")
                             newBookRankBean?.let {
-                                val items = getParam<MutableList<*>>(newBookRankBean, "items")
+                                val items = newBookRankBean.getParam<MutableList<*>>("items")
                                 items?.let {
                                     parseNeedShieldList(items)
                                 }
                             }
                             val newBookRecommendBean =
-                                getParam<Any>(instance, "newBookRecommendBean")
+                                instance.getParam<Any>("newBookRecommendBean")
                             /*
                             newBookRecommendBean?.let {
                                 val items =
@@ -317,9 +317,9 @@ fun PackageParam.shieldNewBook(versionCode: Int) {
 
                              */
                             val newBookTagBean =
-                                getParam<Any>(instance, "newBookTagBean")
+                                instance.getParam<Any>("newBookTagBean")
                             newBookTagBean?.let {
-                                val items = getParam<MutableList<*>>(newBookTagBean, "items")
+                                val items = newBookTagBean.getParam<MutableList<*>>("items")
                                 items?.let {
                                     parseNeedShieldList(items)
                                 }
@@ -370,8 +370,8 @@ fun PackageParam.shieldFreeNewBook(versionCode: Int) {
                     }
                     beforeHook {
                         args[1]?.let {
-                            val categoryIdList = getParam<MutableList<*>>(it, "CategoryIdList")
-                            val itemList = getParam<MutableList<*>>(it, "ItemList")
+                            val categoryIdList = it.getParam<MutableList<*>>("CategoryIdList")
+                            val itemList = it.getParam<MutableList<*>>("ItemList")
                             categoryIdList?.let { list ->
                                 safeRun {
                                     parseNeedShieldList(list)
@@ -398,8 +398,8 @@ fun PackageParam.shieldFreeNewBook(versionCode: Int) {
                     }
                     beforeHook {
                         args[1]?.let {
-                            val categoryIdList = getParam<MutableList<*>>(it, "CategoryIdList")
-                            val itemList = getParam<MutableList<*>>(it, "ItemList")
+                            val categoryIdList = it.getParam<MutableList<*>>("CategoryIdList")
+                            val itemList = it.getParam<MutableList<*>>("ItemList")
                             categoryIdList?.let { list ->
                                 safeRun {
                                     parseNeedShieldList(list)
@@ -435,7 +435,7 @@ fun PackageParam.shieldHotAndRecommend(versionCode: Int) {
                         returnType = UnitType
                     }
                     beforeHook {
-                        val list = getParam<MutableList<*>>(instance, "b")
+                        val list = instance.getParam<MutableList<*>>("b")
                         list?.let {
                             safeRun {
                                 parseNeedShieldList(it)
@@ -627,7 +627,7 @@ fun PackageParam.shieldBookRank(versionCode: Int) {
                     }
                     beforeHook {
                         args[3]?.let {
-                            val rankBookList = getParam<MutableList<*>>(it, "rankBookList")
+                            val rankBookList = it.getParam<MutableList<*>>("rankBookList")
                             rankBookList?.let {
                                 parseNeedShieldList(rankBookList)
                             }
@@ -660,7 +660,7 @@ fun PackageParam.shieldCategoryAllBook(versionCode: Int) {
                     }
                     beforeHook {
                         args[0]?.let {
-                            val list = getParam<ArrayList<*>>(it, "mBookList")
+                            val list = it.getParam<ArrayList<*>>("mBookList")
                             list?.let {
                                 safeRun {
                                     parseNeedShieldList(it)
@@ -759,7 +759,7 @@ fun PackageParam.shieldSearch(
                         }
                         beforeHook {
                             args[0]?.let {
-                                val bookList = getParam<MutableList<*>>(it, "BookList")
+                                val bookList = it.getParam<MutableList<*>>("BookList")
                                 bookList?.let {
                                     safeRun {
                                         parseNeedShieldList(it)
@@ -781,7 +781,7 @@ fun PackageParam.shieldSearch(
                         }
                         beforeHook {
                             args[0]?.let {
-                                val list = getParam<MutableList<*>>(it, "TagList")
+                                val list = it.getParam<MutableList<*>>("TagList")
                                 list?.let {
                                     safeRun {
                                         parseNeedShieldList(it)

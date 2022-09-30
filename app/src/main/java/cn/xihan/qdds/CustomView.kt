@@ -50,7 +50,6 @@ open class CustomLinearLayout(
  * 创建一个自定义Switch
  * @param context 上下文
  * @param title 标题
- * @param key 键
  * @param isEnable 是否选中
  * @param isAvailable 是可用
  * @param isAutoWidth 是否宽度自适应

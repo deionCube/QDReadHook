@@ -66,17 +66,17 @@ fun PackageParam.disableBookshelfFloatWindow(versionCode: Int) {
                         param(View::class.java)
                     }
                     afterHook {
-                        val imgAdIconClose = getView<ImageView>(
-                            instance, "imgAdIconClose"
+                        val imgAdIconClose = instance.getView<ImageView>(
+                            "imgAdIconClose"
                         )
                         imgAdIconClose?.visibility = View.GONE
-                        val layoutImgAdIcon = getView<LinearLayout>(
-                            instance, "layoutImgAdIcon"
+                        val layoutImgAdIcon = instance.getView<LinearLayout>(
+                            "layoutImgAdIcon"
                         )
                         layoutImgAdIcon?.visibility = View.GONE
 
-                        val imgBookShelfActivityIcon = getView<ImageView>(
-                            instance, "imgBookShelfActivityIcon"
+                        val imgBookShelfActivityIcon = instance.getView<ImageView>(
+                            "imgBookShelfActivityIcon"
                         )
                         imgBookShelfActivityIcon?.visibility = View.GONE
                     }
@@ -106,8 +106,8 @@ fun PackageParam.disableBookshelfFloatWindow(versionCode: Int) {
                         param(View::class.java)
                     }
                     afterHook {
-                        val layoutImgAdIcon = getView<LinearLayout>(
-                            instance, "layoutImgAdIcon"
+                        val layoutImgAdIcon = instance.getView<LinearLayout>(
+                            "layoutImgAdIcon"
                         )
                         layoutImgAdIcon?.visibility = View.GONE
                     }

@@ -60,18 +60,14 @@ data class OptionEntity(
      * @param enableAutoSign 启用自动签到
      * @param enableOldLayout 启用旧版布局
      * @param enableLocalCard 启用本地至尊卡
-     * @param enableHideBottomDot 启用隐藏底部小红点
-     * @param enableDisableQSNModeDialog 启用关闭青少年模式弹框
      */
     @Keep
     @Serializable
     data class MainOption(
+        @SerialName("packageName") var packageName: String = "",
         @SerialName("enableAutoSign") var enableAutoSign: Boolean = false,
-        @SerialName("enableDisableQSNModeDialog") var enableDisableQSNModeDialog: Boolean = false,
-        @SerialName("enableHideBottomDot") var enableHideBottomDot: Boolean = false,
         @SerialName("enableLocalCard") var enableLocalCard: Boolean = false,
-        @SerialName("enableOldLayout") var enableOldLayout: Boolean = false,
-        @SerialName("packageName") var packageName: String = ""
+        @SerialName("enableOldLayout") var enableOldLayout: Boolean = false
     )
 
     /**
@@ -85,9 +81,9 @@ data class OptionEntity(
     @Keep
     @Serializable
     data class ShieldOption(
-        @SerialName("authorList") var authorList: List<String> = emptyList(),
-        @SerialName("bookNameList") var bookNameList: List<String> = emptyList(),
-        @SerialName("bookTypeList") var bookTypeList: List<String> = emptyList(),
+        @SerialName("authorList") var authorList: Set<String> = emptySet(),
+        @SerialName("bookNameList") var bookNameList: Set<String> = emptySet(),
+        @SerialName("bookTypeList") var bookTypeList: Set<String> = emptySet(),
         @SerialName("shieldOptionValueSet") var shieldOptionValueSet: MutableSet<Int> = mutableSetOf(),
         @SerialName("enableBookTypeEnhancedBlocking") var enableBookTypeEnhancedBlocking: Boolean = false
     )
@@ -117,6 +113,8 @@ data class OptionEntity(
      * @param enableHideBookshelfDailyReading 启用隐藏书架每日导读
      * @param enableHideMainBottomNavigationBarFind 启用隐藏主页底部导航栏发现
      * @param enableSearchHideAllView 启用隐藏搜索全部控件
+     * @param enableHideMainBottomNavigationRedDot 启用隐藏主页底部导航栏红点
+     * @param enableDisableQSNModeDialog 启用关闭青少年模式弹框
      * @param accountOption 用户页面配置
      * @param bookDetailOptions 书籍详情配置
      */
@@ -126,6 +124,8 @@ data class OptionEntity(
         @SerialName("enableHideBookshelfDailyReading") var enableHideBookshelfDailyReading: Boolean = false,
         @SerialName("enableHideMainBottomNavigationBarFind") var enableHideMainBottomNavigationBarFind: Boolean = false,
         @SerialName("enableSearchHideAllView") var enableSearchHideAllView: Boolean = false,
+        @SerialName("enableDisableQSNModeDialog") var enableDisableQSNModeDialog: Boolean = false,
+        @SerialName("enableHideMainBottomNavigationRedDot") var enableHideMainBottomNavigationRedDot: Boolean = false,
         @SerialName("AccountOption") var accountOption: AccountOption = AccountOption(),
         @SerialName("BookDetailOptions") var bookDetailOptions: BookDetailOptions = BookDetailOptions()
     ) {
@@ -133,6 +133,7 @@ data class OptionEntity(
         /**
          * 用户页面配置
          * @param enableHideAccount 启用开启隐藏用户页面
+         * @param enableHideAccountRightTopRedDot 启用隐藏用户页面右上角红点
          * @param configurationsOptionList 可用配置集合
          * @param configurationsSelectedOptionList 已选配置集合
          */
@@ -140,6 +141,7 @@ data class OptionEntity(
         @Serializable
         data class AccountOption(
             @SerialName("enableHideAccount") var enableHideAccount: Boolean = false,
+            @SerialName("enableHideAccountRightTopRedDot") var enableHideAccountRightTopRedDot: Boolean = false,
             @SerialName("configurationsOptionList") var configurationsOptionList: MutableSet<String> = mutableSetOf(),
             @SerialName("configurationsSelectedOptionList") var configurationsSelectedOptionList: MutableSet<String> = mutableSetOf()
         )
@@ -234,9 +236,7 @@ fun defaultOptionEntity(): OptionEntity = OptionEntity(
         packageName = "com.qidian.QDReader",
         enableAutoSign = true,
         enableOldLayout = false,
-        enableLocalCard = true,
-        enableHideBottomDot = true,
-        enableDisableQSNModeDialog = true
+        enableLocalCard = true
     ), advOption = OptionEntity.AdvOption(
         enableDisableBookshelfFloat = true,
         enableDisableBookshelfBottomAd = true,
@@ -245,9 +245,9 @@ fun defaultOptionEntity(): OptionEntity = OptionEntity(
         enableDisableAdv = true
     ), shieldOption = OptionEntity.ShieldOption(
         shieldOptionValueSet = mutableSetOf(),
-        authorList = emptyList(),
-        bookTypeList = emptyList(),
-        bookNameList = emptyList()
+        authorList = emptySet(),
+        bookTypeList = emptySet(),
+        bookNameList = emptySet()
     ), splashOption = OptionEntity.SplashOption(
         enableSplash = false,
         enableCustomSplash = false,
@@ -258,8 +258,11 @@ fun defaultOptionEntity(): OptionEntity = OptionEntity(
     ),
     viewHideOption = OptionEntity.ViewHideOption(
         enableHideMainBottomNavigationBarFind = false,
+        enableHideMainBottomNavigationRedDot = true,
+        enableDisableQSNModeDialog = true,
         accountOption = OptionEntity.ViewHideOption.AccountOption(
             enableHideAccount = true,
+            enableHideAccountRightTopRedDot = true,
             configurationsOptionList = mutableSetOf(),
             configurationsSelectedOptionList = mutableSetOf()
         )
