@@ -902,11 +902,13 @@ fun Context.showShieldOptionDialog() {
     ) {
         HookEntry.optionEntity.shieldOption.bookTypeList = HookEntry.parseKeyWordOption(it)
     }
-    linearLayout.addView(customTextView)
-    linearLayout.addView(authorNameOptionCustomEdit)
-    linearLayout.addView(bookNameOptionCustomEdit)
-    linearLayout.addView(bookTypeSwitch)
-    linearLayout.addView(bookTypeOptionCustomEdit)
+    linearLayout.apply {
+        addView(customTextView)
+        addView(authorNameOptionCustomEdit)
+        addView(bookNameOptionCustomEdit)
+        addView(bookTypeSwitch)
+        addView(bookTypeOptionCustomEdit)
+    }
     alertDialog {
         title = "屏蔽相关配置"
         customView = linearLayout

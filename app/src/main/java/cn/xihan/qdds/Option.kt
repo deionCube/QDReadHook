@@ -110,6 +110,7 @@ data class OptionEntity(
 
     /**
      * 控件隐藏配置
+     * @param enableHideMainTopBox 启用隐藏主页顶部宝箱提示
      * @param enableHideBookshelfDailyReading 启用隐藏书架每日导读
      * @param enableHideMainBottomNavigationBarFind 启用隐藏主页底部导航栏发现
      * @param enableSearchHideAllView 启用隐藏搜索全部控件
@@ -121,6 +122,7 @@ data class OptionEntity(
     @Keep
     @Serializable
     data class ViewHideOption(
+        @SerialName("enableHideMainTopBox") var enableHideMainTopBox: Boolean = false,
         @SerialName("enableHideBookshelfDailyReading") var enableHideBookshelfDailyReading: Boolean = false,
         @SerialName("enableHideMainBottomNavigationBarFind") var enableHideMainBottomNavigationBarFind: Boolean = false,
         @SerialName("enableSearchHideAllView") var enableSearchHideAllView: Boolean = false,

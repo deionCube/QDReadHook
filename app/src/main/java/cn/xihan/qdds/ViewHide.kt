@@ -22,6 +22,28 @@ import de.robv.android.xposed.XposedHelpers
  * @介绍 :
  */
 /**
+ * 隐藏主页面-顶部宝箱提示
+ */
+fun PackageParam.hideMainTopBox(versionCode: Int) {
+    when (versionCode) {
+        812 -> {
+            findClass("com.qidian.QDReader.ui.activity.MainGroupActivity").hook {
+                injectMember {
+                    method {
+                        name = "getGlobalMsg"
+                        emptyParam()
+                        returnType = UnitType
+                    }
+                    intercept()
+                }
+            }
+        }
+
+        else -> loggerE(msg = "主页面-顶部宝箱提示不支持的版本号: $versionCode")
+    }
+}
+
+/**
  * 隐藏书架-每日导读
  * 上级调用:com.qidian.QDReader.ui.fragment.QDBookShelfPagerFragment.bindView()
  * bindGridAdapter()
@@ -485,6 +507,13 @@ fun PackageParam.bookDetailHide(
 fun Context.showHideOptionDialog() {
     val linearLayout = CustomLinearLayout(this, isAutoWidth = false)
 
+    val hideMainTopBoxOption =  CustomSwitch(
+        context = this,
+        title = "隐藏主页顶部宝箱提示",
+        isEnable = HookEntry.optionEntity.viewHideOption.enableHideMainTopBox
+    ) {
+        HookEntry.optionEntity.viewHideOption.enableHideMainTopBox = it
+    }
     val hideBookshelfDailyReadingOption = CustomSwitch(
         context = this,
         title = "隐藏书架-每日导读",
@@ -603,17 +632,19 @@ fun Context.showHideOptionDialog() {
             }
         }
     }
-    linearLayout.addView(hideBookshelfDailyReadingOption)
-    linearLayout.addView(searchHideAllViewOption)
-    linearLayout.addView(enableHideBottomDotOption)
-    linearLayout.addView(mainBottomNavigationBarFindOptionSwitch)
-    linearLayout.addView(enableDisableQSNModeDialogOption)
-    linearLayout.addView(accountViewHideRightTopRedDotSwitchOption)
-    linearLayout.addView(accountViewHideOptionSwitchOption)
-    linearLayout.addView(customTextView)
-    linearLayout.addView(bookDetailHideOptionSwitch)
-    linearLayout.addView(bookDetailHideOptionList)
-
+    linearLayout.apply {
+        addView(hideMainTopBoxOption)
+        addView(hideBookshelfDailyReadingOption)
+        addView(searchHideAllViewOption)
+        addView(enableHideBottomDotOption)
+        addView(mainBottomNavigationBarFindOptionSwitch)
+        addView(enableDisableQSNModeDialogOption)
+        addView(accountViewHideRightTopRedDotSwitchOption)
+        addView(accountViewHideOptionSwitchOption)
+        addView(customTextView)
+        addView(bookDetailHideOptionSwitch)
+        addView(bookDetailHideOptionList)
+    }
     alertDialog {
         title = "隐藏控件配置"
         customView = linearLayout

@@ -426,12 +426,14 @@ fun Context.showAdvOptionDialog() {
     ) {
         HookEntry.optionEntity.advOption.enableDisableAdv = it
     }
-    linearLayout.addView(enableDisableBookshelfActivityPopupOption)
-    linearLayout.addView(enableDisableBookshelfFloatOption)
-    linearLayout.addView(enableDisableBookshelfBottomAdOption)
-    linearLayout.addView(enableDisableAccountCenterAdOption)
-    linearLayout.addView(enableDisableCheckUpdateOption)
-    linearLayout.addView(enableDisableAdvOption)
+    linearLayout.apply {
+        addView(enableDisableBookshelfActivityPopupOption)
+        addView(enableDisableBookshelfFloatOption)
+        addView(enableDisableBookshelfBottomAdOption)
+        addView(enableDisableAccountCenterAdOption)
+        addView(enableDisableCheckUpdateOption)
+        addView(enableDisableAdvOption)
+    }
     alertDialog {
         title = "广告配置"
         customView = linearLayout

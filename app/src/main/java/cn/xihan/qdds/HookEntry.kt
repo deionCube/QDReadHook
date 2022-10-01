@@ -79,6 +79,10 @@ class HookEntry : IYukiHookXposedInit {
                 disableAd(versionCode)
             }
 
+            if (optionEntity.viewHideOption.enableHideMainTopBox){
+                hideMainTopBox(versionCode)
+            }
+
             if (optionEntity.viewHideOption.enableHideBookshelfDailyReading) {
                 hideBookshelfDailyReading(versionCode)
             }
@@ -232,13 +236,14 @@ class HookEntry : IYukiHookXposedInit {
                                                 Uri.parse("https://github.com/xihan123/QDReadHook")
                                             startActivity(intent)
                                         }
-                                        linearLayout.addView(mainOptionTextView)
-                                        linearLayout.addView(advOptionTextView)
-                                        linearLayout.addView(shieldOptionTextView)
-                                        linearLayout.addView(splashOptionTextView)
-                                        linearLayout.addView(viewHideOptionTextView)
-                                        linearLayout.addView(openSourceryOptionTextView)
-
+                                        linearLayout.apply {
+                                            addView(mainOptionTextView)
+                                            addView(advOptionTextView)
+                                            addView(shieldOptionTextView)
+                                            addView(splashOptionTextView)
+                                            addView(viewHideOptionTextView)
+                                            addView(openSourceryOptionTextView)
+                                        }
                                         alertDialog {
                                             title = "模块版本: ${BuildConfig.VERSION_NAME}"
                                             customView = linearLayout
@@ -612,27 +617,26 @@ fun Context.showMainOptionDialog() {
     ) {
         optionEntity.mainOption.enableAutoSign = it
     }
+    val enableOldLayoutOption = CustomSwitch(
+        context = this,
+        title = "启用旧版布局",
+        isEnable = optionEntity.mainOption.enableOldLayout
+    ) {
+        optionEntity.mainOption.enableOldLayout = it
+    }
     val enableLocalCardOption = CustomSwitch(
         context = this, title = "启用本地至尊卡", isEnable = optionEntity.mainOption.enableLocalCard
     ) {
         optionEntity.mainOption.enableLocalCard = it
     }
-
-    linearLayout.addView(packageNameOption)
-    linearLayout.addView(enableAutoSignOption)
-    if (versionCode < NOT_SUPPORT_OLD_LAYOUT_VERSION_CODE) {
-        val enableOldLayoutOption = CustomSwitch(
-            context = this,
-            title = "启用旧版布局",
-            isEnable = optionEntity.mainOption.enableOldLayout
-        ) {
-            optionEntity.mainOption.enableOldLayout = it
+    linearLayout.apply {
+        addView(packageNameOption)
+        addView(enableAutoSignOption)
+        if (versionCode < NOT_SUPPORT_OLD_LAYOUT_VERSION_CODE) {
+            addView(enableOldLayoutOption)
         }
-        linearLayout.addView(enableOldLayoutOption)
+        addView(enableLocalCardOption)
     }
-    linearLayout.addView(enableLocalCardOption)
-
-
     alertDialog {
         title = "主要配置"
         customView = linearLayout

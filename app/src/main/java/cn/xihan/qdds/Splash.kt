@@ -195,12 +195,14 @@ fun Context.showSplashOptionDialog() {
     ) {
         HookEntry.optionEntity.splashOption.customSplashImageFilePath = it
     }
-    linearLayout.addView(enableSplashOptionSwitch)
-    linearLayout.addView(enableCustomSplashOptionSwitch)
-    linearLayout.addView(customSplashEnableShowAllButtonOptionSwitch)
-    linearLayout.addView(splashCustomToBookEditText)
-    linearLayout.addView(splashCustomTypeOptionEdit)
-    linearLayout.addView(splashCustomImageEditText)
+    linearLayout.apply {
+        addView(enableSplashOptionSwitch)
+        addView(enableCustomSplashOptionSwitch)
+        addView(customSplashEnableShowAllButtonOptionSwitch)
+        addView(splashCustomToBookEditText)
+        addView(splashCustomTypeOptionEdit)
+        addView(splashCustomImageEditText)
+    }
     alertDialog {
         title = "闪屏页相关配置"
         customView = linearLayout

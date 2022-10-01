@@ -1,8 +1,8 @@
 buildscript {
     ext {
 
-        appVersionName = '1.2.4'
-        appVersionCode = 124
+        appVersionName = '1.2.5'
+        appVersionCode = 125
 
         minSdkVersion = 24
         targetSdkVersion = 33
@@ -11,7 +11,7 @@ buildscript {
         appcompatVersion = '1.6.0-rc01'
         constraintLayoutVersion = '2.2.0-alpha02'
         materialVersion = '1.8.0-alpha01'
-        YuKiHookVersion = "1.1.2"
+        YuKiHookVersion = "1.1.3"
 
     }
 }
