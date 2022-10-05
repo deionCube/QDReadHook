@@ -24,6 +24,7 @@ import java.io.File
  * @param shieldOption 屏蔽配置
  * @param splashOption 启动配置
  * @param viewHideOption 控件隐藏配置
+ * @param replaceRuleOption 替换配置
  */
 @Keep
 @Serializable
@@ -32,14 +33,16 @@ data class OptionEntity(
     @SerialName("mainOption") var mainOption: MainOption = MainOption(),
     @SerialName("shieldOption") var shieldOption: ShieldOption = ShieldOption(),
     @SerialName("splashOption") var splashOption: SplashOption = SplashOption(),
-    @SerialName("viewHideOption") var viewHideOption: ViewHideOption = ViewHideOption()
+    @SerialName("viewHideOption") var viewHideOption: ViewHideOption = ViewHideOption(),
+    @SerialName("replaceRuleOption") var replaceRuleOption: ReplaceRuleOption = ReplaceRuleOption()
 ) {
     /**
      * 广告配置
      * @param enableDisableBookshelfActivityPopup 启用移除书架活动弹框
      * @param enableDisableBookshelfFloat 启用禁用书架浮窗
      * @param enableDisableBookshelfBottomAd 启用禁用书架底部导航栏广告
-     * @param enableDisableAccountCenterAd 启用移除我-中间广告
+     * @param enableDisableAccountCenterAd 启用禁用我-中间广告
+     * @param enableDisableReadPageFloatAd 启用禁用阅读页浮窗广告
      * @param enableDisableCheckUpdate 启用禁止检查更新
      * @param enableDisableAdv 启用禁止广告
      */
@@ -47,11 +50,12 @@ data class OptionEntity(
     @Serializable
     data class AdvOption(
         @SerialName("enableDisableBookshelfActivityPopup") var enableDisableBookshelfActivityPopup: Boolean = false,
-        @SerialName("enableDisableAdv") var enableDisableAdv: Boolean = false,
-        @SerialName("enableDisableCheckUpdate") var enableDisableCheckUpdate: Boolean = false,
-        @SerialName("enableDisableAccountCenterAd") var enableDisableAccountCenterAd: Boolean = false,
+        @SerialName("enableDisableBookshelfFloat") var enableDisableBookshelfFloat: Boolean = false,
         @SerialName("enableDisableBookshelfBottomAd") var enableDisableBookshelfBottomAd: Boolean = false,
-        @SerialName("enableDisableBookshelfFloat") var enableDisableBookshelfFloat: Boolean = false
+        @SerialName("enableDisableAccountCenterAd") var enableDisableAccountCenterAd: Boolean = false,
+        @SerialName("enableDisableReadPageFloatAd") var enableDisableReadPageFloatAd: Boolean = false,
+        @SerialName("enableDisableCheckUpdate") var enableDisableCheckUpdate: Boolean = false,
+        @SerialName("enableDisableAdv") var enableDisableAdv: Boolean = false,
     )
 
     /**
@@ -174,6 +178,35 @@ data class OptionEntity(
         )
 
 
+    }
+
+    /**
+     * 替换配置
+     * @param enableReplace 启用替换
+     * @param replaceRuleList 替换规则列表
+     */
+    @Keep
+    @Serializable
+    data class ReplaceRuleOption(
+        @SerialName("enableReplace") var enableReplace: Boolean = false,
+        @SerialName("replaceRuleList") var replaceRuleList: MutableList<ReplaceItem> = mutableListOf()
+    ) {
+
+        /**
+         * 替换项
+         * @param replaceRuleName 替换规则名称
+         * @param enableRegularExpressions 启用正则表达式
+         * @param replaceRuleRegex 替换规则正则
+         * @param replaceWith 替换为
+         */
+        @Keep
+        @Serializable
+        data class ReplaceItem(
+            @SerialName("replaceRuleName") var replaceRuleName: String = "",
+            @SerialName("enableRegularExpressions") var enableRegularExpressions: Boolean = false,
+            @SerialName("replaceRuleRegex") var replaceRuleRegex: String = "",
+            @SerialName("replaceWith") var replaceWith: String = ""
+        )
     }
 }
 

@@ -246,4 +246,44 @@ fun Context.checkModuleUpdate() {
     }.start()
 }
 
+/**
+ * 容错的根据正则修改字符串返回字符串
+ * @param enableRegex 启用正则表达式
+ * @param regex 正则表达式
+ * @param replacement 替换内容
+ */
+fun String.safeReplace(
+    enableRegex: Boolean = false,
+    regex: String = "",
+    replacement: String = ""
+): String {
+    return try {
+        if (enableRegex) {
+            this.replace(regex.toRegex(), replacement)
+        } else {
+            this.replace(regex, replacement)
+        }
+    } catch (e: Exception) {
+        loggerE(msg = "safeReplace 报错: ${e.message}")
+        this
+    }
+}
+
+/**
+ * 根据 ReplaceRuleOption 中 replaceRuleList 修改返回字符串
+ * @param replaceRuleList 替换规则列表
+ */
+fun String.replaceByReplaceRuleList(replaceRuleList: List<OptionEntity.ReplaceRuleOption.ReplaceItem>): String =
+    try {
+        var result = this
+        replaceRuleList.forEach {
+            result =
+                result.safeReplace(it.enableRegularExpressions, it.replaceRuleRegex, it.replaceWith)
+        }
+        result
+    } catch (e: Exception) {
+        loggerE(msg = "replaceByReplaceRuleList 报错: ${e.message}")
+        this
+    }
+
 

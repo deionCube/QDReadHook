@@ -170,3 +170,25 @@ android.applicationVariants.all { variant ->
     }
 }
 
+
+// 卸载模块APK任务
+task uninstallApk(type: Exec) {
+    def packageName = android.defaultConfig.applicationId
+    def cmd = "adb uninstall $packageName"
+    println "uninstallApk cmd=$cmd"
+    commandLine 'cmd', '/c', cmd
+}
+
+// 关闭起点Apk任务
+task killApk(type: Exec) {
+    def packageName = "com.qidian.QDReader"
+    def cmd = "adb shell am force-stop $packageName"
+    println "killApk cmd=$cmd"
+    commandLine 'cmd', '/c', cmd
+}
+
+
+
+
+
+

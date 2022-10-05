@@ -3,11 +3,15 @@ package cn.xihan.qdds
 import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Typeface
+import android.widget.ArrayAdapter
+import android.widget.Button
 import android.widget.EditText
 import android.widget.LinearLayout
+import android.widget.ListView
 import android.widget.Switch
 import android.widget.TextView
 import androidx.core.widget.addTextChangedListener
+
 
 /**
  * @项目名 : QDReadHook
@@ -43,7 +47,6 @@ open class CustomLinearLayout(
         }
     }
 }
-
 
 
 /**
@@ -99,12 +102,15 @@ class CustomEditText(
     context: Context,
     title: String = "",
     message: String = "",
-    value: String = "",
+    value: String? = "",
+    mHint: String = "",
     isAvailable: Boolean = true,
     isAutoWidth: Boolean = false,
     isAutoHeight: Boolean = true,
     block: (String) -> Unit
 ) : CustomLinearLayout(context, isAutoWidth, isAutoHeight) {
+
+    var editText: EditText
 
     init {
         if (title.isNotBlank() && message.isNotBlank()) {
@@ -115,9 +121,13 @@ class CustomEditText(
             }
             addView(textView)
         }
-        val editText = EditText(context).apply {
+        editText = EditText(context).apply {
             isEnabled = isAvailable
-            setText(value)
+            if (value.isNullOrBlank() && mHint.isNotBlank()) {
+                hint = mHint
+            } else {
+                setText(value)
+            }
             addTextChangedListener {
                 block(it.toString())
             }
@@ -128,8 +138,12 @@ class CustomEditText(
                 context.dp2px(10F), context.dp2px(10F), context.dp2px(10F), context.dp2px(10F)
             )
         }
-
     }
+
+    /**
+     * 获取输入框的值
+     */
+    fun getText(): String = editText.text.toString()
 }
 
 /**
@@ -176,5 +190,115 @@ class CustomTextView(
         }
     }
 
+}
+
+/**
+ * 创建一个自定义Button
+ * @param context 上下文
+ * @param mText 标题
+ * @param mTextSize 文本大小
+ * @param isBold 是否加粗
+ * @param isAutoWidth 是否宽度自适应
+ * @param isAutoHeight 是否高度自适应
+ * @param onClickAction 事件执行方法
+ */
+class CustomButton(
+    context: Context,
+    mText: String = "",
+    mTextSize: Float = 16F,
+    isBold: Boolean = false,
+    isAutoWidth: Boolean = false,
+    isAutoHeight: Boolean = true,
+    onClickAction: () -> Unit
+) : CustomLinearLayout(context, isAutoWidth, isAutoHeight) {
+
+    init {
+        val button = Button(context).apply {
+            text = mText
+            textSize = mTextSize
+            if (isBold) {
+                setTypeface(typeface, Typeface.BOLD)
+            }
+            setOnClickListener {
+                onClickAction()
+            }
+        }
+        apply {
+            addView(button)
+            layoutParams = LayoutParams(
+                if (isAutoWidth) LayoutParams.WRAP_CONTENT else LayoutParams.MATCH_PARENT,
+                if (isAutoHeight) LayoutParams.WRAP_CONTENT else LayoutParams.MATCH_PARENT
+            )
+            setPadding(
+                context.dp2px(10F), context.dp2px(10F), context.dp2px(10F), context.dp2px(10F)
+            )
+        }
+    }
+
+}
+
+/**
+ * 创建一个自定义 ListView
+ * @param context 上下文
+ * @param isAutoWidth 是否宽度自适应
+ * @param isAutoHeight 是否高度自适应
+ * @param onItemClickListener item点击使劲
+ * @param onItemLongClickListener item长按事件
+ * @param listData 数据
+ */
+class CustomListView(
+    context: Context,
+    isAutoWidth: Boolean = false,
+    isAutoHeight: Boolean = true,
+    onItemClickListener: (CustomListView, position: Int) -> Unit,
+    onItemLongClickListener: (CustomListView, position: Int) -> Unit,
+    listData: List<String>
+) : CustomLinearLayout(context, isAutoWidth, isAutoHeight) {
+
+    var listView: ListView
+    var mAdapter: ArrayAdapter<String>
+
+    init {
+        mAdapter = ArrayAdapter(context, android.R.layout.simple_list_item_1, listData)
+        listView = ListView(context).apply {
+            adapter = mAdapter
+
+            setOnItemClickListener { _, _, i, _ ->
+                onItemClickListener(this@CustomListView, i)
+            }
+            setOnItemLongClickListener { _, _, i, _ ->
+                onItemLongClickListener(this@CustomListView, i)
+                true
+            }
+        }
+        apply {
+            addView(listView)
+            layoutParams = LayoutParams(
+                if (isAutoWidth) LayoutParams.WRAP_CONTENT else LayoutParams.MATCH_PARENT,
+                if (isAutoHeight) LayoutParams.WRAP_CONTENT else LayoutParams.MATCH_PARENT
+            )
+            setPadding(
+                context.dp2px(10F), context.dp2px(10F), context.dp2px(10F), context.dp2px(10F)
+            )
+        }
+    }
+
+    /**
+     * 更新数据
+     */
+    fun updateListData(listData: List<String>) {
+        mAdapter.clear()
+        mAdapter.addAll(listData)
+        mAdapter.notifyDataSetChanged()
+    }
+
+    /**
+     * 删除指定Item
+     * @param position 位置
+     */
+    fun removeItem(position: Int) {
+        mAdapter.remove(mAdapter.getItem(position))
+        mAdapter.notifyDataSetChanged()
+    }
 }
 

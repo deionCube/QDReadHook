@@ -191,6 +191,30 @@ fun PackageParam.disableAccountCenterAd(versionCode: Int) {
 }
 
 /**
+ * 禁用阅读页-浮窗广告
+ */
+fun PackageParam.disableReadPageFloatAd(versionCode: Int) {
+    when (versionCode) {
+        812 -> {
+            findClass("com.qidian.QDReader.ui.activity.QDReaderActivity").hook {
+                injectMember {
+                    method {
+                        name = "O0"
+                        param(
+                            "com.qidian.QDReader.ui.activity.QDReaderActivity".toClass(),
+                            "com.qidian.QDReader.repository.entity.ReadMenuData".toClass()
+                        )
+                    }
+                    intercept()
+                }
+            }
+        }
+
+        else -> loggerE(msg = "移除阅读页-浮窗广告不支持的版本号为: $versionCode")
+    }
+}
+
+/**
  * Hook 禁用广告
  */
 fun PackageParam.disableAd(versionCode: Int) {
@@ -411,6 +435,13 @@ fun Context.showAdvOptionDialog() {
     ) {
         HookEntry.optionEntity.advOption.enableDisableAccountCenterAd = it
     }
+    val enableDisableReadPageFloatAdOption = CustomSwitch(
+        context = this,
+        title = "禁用阅读页浮窗广告",
+        isEnable = HookEntry.optionEntity.advOption.enableDisableReadPageFloatAd
+    ){
+        HookEntry.optionEntity.advOption.enableDisableReadPageFloatAd = it
+    }
     val enableDisableCheckUpdateOption = CustomSwitch(
         context = this,
         title = "禁用检查更新",
@@ -431,6 +462,7 @@ fun Context.showAdvOptionDialog() {
         addView(enableDisableBookshelfFloatOption)
         addView(enableDisableBookshelfBottomAdOption)
         addView(enableDisableAccountCenterAdOption)
+        addView(enableDisableReadPageFloatAdOption)
         addView(enableDisableCheckUpdateOption)
         addView(enableDisableAdvOption)
     }

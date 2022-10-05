@@ -71,6 +71,10 @@ class HookEntry : IYukiHookXposedInit {
                 disableAccountCenterAd(versionCode)
             }
 
+            if (optionEntity.advOption.enableDisableReadPageFloatAd){
+                disableReadPageFloatAd(versionCode)
+            }
+
             if (optionEntity.advOption.enableDisableCheckUpdate) {
                 disableUpdate(versionCode)
             }
@@ -79,7 +83,7 @@ class HookEntry : IYukiHookXposedInit {
                 disableAd(versionCode)
             }
 
-            if (optionEntity.viewHideOption.enableHideMainTopBox){
+            if (optionEntity.viewHideOption.enableHideMainTopBox) {
                 hideMainTopBox(versionCode)
             }
 
@@ -113,6 +117,10 @@ class HookEntry : IYukiHookXposedInit {
 
             if (optionEntity.viewHideOption.bookDetailOptions.enableHideBookDetail) {
                 bookDetailHide(versionCode)
+            }
+
+            if (optionEntity.replaceRuleOption.enableReplace){
+                enableReplace(versionCode)
             }
 
 
@@ -226,6 +234,13 @@ class HookEntry : IYukiHookXposedInit {
                                         ) {
                                             showHideOptionDialog()
                                         }
+                                        val replaceOptionTextView = CustomTextView(
+                                            context = this,
+                                            mText = "替换相关设置",
+                                            isBold = true
+                                        ){
+                                            showReplaceOptionDialog()
+                                        }
                                         val openSourceryOptionTextView = CustomTextView(
                                             context = this,
                                             mText = "开源地址及详细说明",
@@ -242,6 +257,7 @@ class HookEntry : IYukiHookXposedInit {
                                             addView(shieldOptionTextView)
                                             addView(splashOptionTextView)
                                             addView(viewHideOptionTextView)
+                                            addView(replaceOptionTextView)
                                             addView(openSourceryOptionTextView)
                                         }
                                         alertDialog {
